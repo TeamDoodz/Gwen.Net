@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Gwen.Net.OpenTk.Shaders;
-using OpenToolkit.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL;
 
 namespace Gwen.Net.OpenTk.Renderers
 {
-    public class OpenTKGL20Renderer : OpenTKRendererBase
+	[Obsolete("OpenGL 4 is the only supported version.")]
+	public class OpenTKGL20Renderer : OpenTKRendererBase
     {
         private const int MaxVerts = 4096;
 

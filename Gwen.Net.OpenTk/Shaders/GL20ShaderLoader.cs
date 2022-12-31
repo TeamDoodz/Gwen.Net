@@ -1,9 +1,11 @@
-﻿using System.Diagnostics;
-using OpenToolkit.Graphics.OpenGL;
+﻿using System;
+using System.Diagnostics;
+using OpenTK.Graphics.OpenGL4;
 
 namespace Gwen.Net.OpenTk.Shaders
 {
-    public class GL20ShaderLoader : IShaderLoader
+	[Obsolete("OpenGL 4 is the only supported version.")]
+	public class GL20ShaderLoader : IShaderLoader
     {
         public IShader Load(string shaderName)
         {

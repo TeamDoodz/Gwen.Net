@@ -1,8 +1,7 @@
-﻿using OpenToolkit.Graphics.OpenGL;
+﻿using OpenTK.Graphics.OpenGL4;
 
-namespace Gwen.Net.OpenTk.Shaders
-{
-    public class GLShader : IShader
+namespace Gwen.Net.OpenTk.Shaders {
+	public class GLShader : IShader
     {
         public int Program { get; }
         public int VertexShader { get; }

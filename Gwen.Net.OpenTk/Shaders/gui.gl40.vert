@@ -9,8 +9,7 @@ out vec4 frag_color;
 
 uniform vec2 uScreenSize = vec2(1280, 720);
 
-void main(void)
-{
+void main(void) {
 	frag_uv = in_uv;
 	frag_color = in_color;
 

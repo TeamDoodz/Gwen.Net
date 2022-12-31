@@ -1,69 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Gwen.Net
-{
-    public class FontCache : IDisposable
-    {
-        public static Font GetFont(Renderer.RendererBase renderer, string faceName, int size = 10, FontStyle style = 0)
-        {
-            if (m_Instance == null)
-                m_Instance = new FontCache();
+namespace Gwen.Net;
 
-            return m_Instance.InternalGetFont(renderer, faceName, size, style);
-        }
+public class FontCache : IDisposable {
+	public static Font GetFont(Renderer.RendererBase renderer, string faceName, int size = 10, FontStyle style = 0) {
+		if (instance == null)
+			instance = new FontCache();
 
-        public static void FreeCache()
-        {
-            if (m_Instance != null)
-                m_Instance.Dispose();
-        }
+		return instance.InternalGetFont(renderer, faceName, size, style);
+	}
 
-        private Font InternalGetFont(Renderer.RendererBase renderer, string faceName, int size, FontStyle style)
-        {
-            string id = String.Format("{0};{1};{2}", faceName, size, (int)style);
-            Font font;
-            if (!m_FontCache.TryGetValue(id, out font))
-            {
-                font = new Font(renderer, faceName, size);
+	public static void FreeCache() {
+		if (instance != null)
+			instance.Dispose();
+	}
 
-                if ((style & FontStyle.Bold) != 0)
-                    font.Bold = true;
-                if ((style & FontStyle.Italic) != 0)
-                    font.Italic = true;
-                if ((style & FontStyle.Underline) != 0)
-                    font.Underline = true;
-                if ((style & FontStyle.Strikeout) != 0)
-                    font.Strikeout = true;
+	private Font InternalGetFont(Renderer.RendererBase renderer, string faceName, int size, FontStyle style) {
+		string id = String.Format("{0};{1};{2}", faceName, size, (int)style);
+		Font font;
+		if (!cache.TryGetValue(id, out font)) {
+			font = new Font(renderer, faceName, size);
 
-                m_FontCache[id] = font;
-            }
+			if ((style & FontStyle.Bold) != 0)
+				font.Bold = true;
+			if ((style & FontStyle.Italic) != 0)
+				font.Italic = true;
+			if ((style & FontStyle.Underline) != 0)
+				font.Underline = true;
+			if ((style & FontStyle.Strikeout) != 0)
+				font.Strikeout = true;
 
-            return font;
-        }
+			cache[id] = font;
+		}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-            m_Instance = null;
-        }
+		return font;
+	}
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                foreach (var font in m_FontCache)
-                {
-                    font.Value.Dispose();
-                }
+	public void Dispose() {
+		Dispose(true);
+		GC.SuppressFinalize(this);
+		instance = null;
+	}
 
-                m_FontCache.Clear();
-            }
-        }
+	protected virtual void Dispose(bool disposing) {
+		if (disposing) {
+			foreach (var font in cache) {
+				font.Value.Dispose();
+			}
 
-        private static FontCache m_Instance = null;
+			cache.Clear();
+		}
+	}
 
-        private Dictionary<string, Font> m_FontCache = new Dictionary<string, Font>();
-    }
+	private static FontCache instance = null;
+
+	private Dictionary<string, Font> cache = new Dictionary<string, Font>();
 }

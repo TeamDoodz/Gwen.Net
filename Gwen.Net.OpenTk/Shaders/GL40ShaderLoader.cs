@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using OpenToolkit.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 
 namespace Gwen.Net.OpenTk.Shaders
 {

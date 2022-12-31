@@ -60,7 +60,7 @@ namespace Gwen.Net
             Rectangle bounds = g_ToolTip.ToolTip.Bounds;
 
             Rectangle offset = Util.FloatRect(mousePos.X - bounds.Width / 2, mousePos.Y - bounds.Height - 10, bounds.Width, bounds.Height);
-            offset = Util.ClampRectToRect(offset, g_ToolTip.GetCanvas().Bounds);
+            offset = Rectangle.ClampRectToRect(offset, g_ToolTip.GetCanvas().Bounds);
 
             //Calculate offset on screen bounds
             render.AddRenderOffset(offset);

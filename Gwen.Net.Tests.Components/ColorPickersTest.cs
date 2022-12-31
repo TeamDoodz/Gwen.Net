@@ -13,7 +13,7 @@ namespace Gwen.Net.Tests.Components
         {
             /* RGB Picker */
             {
-                ColorPicker rgbPicker = new ColorPicker(this);
+                RGBColorPicker rgbPicker = new RGBColorPicker(this);
                 rgbPicker.Dock = Net.Dock.Top;
                 rgbPicker.ColorChanged += ColorChanged;
             }
@@ -53,8 +53,8 @@ namespace Gwen.Net.Tests.Components
         void ColorChanged(ControlBase control, EventArgs args)
         {
             IColorPicker picker = control as IColorPicker;
-            Net.Color c = picker.SelectedColor;
-            Net.HSV hsv = c.ToHSV();
+            Net.Color c = picker.SelectedColorRGB;
+            Net.HSV hsv = picker.SelectedColorHSV;
             String text = String.Format("Color changed: RGB: {0:X2}{1:X2}{2:X2} HSV: {3:F1} {4:F2} {5:F2}",
                                         c.R, c.G, c.B, hsv.H, hsv.S, hsv.V);
             UnitPrint(text);

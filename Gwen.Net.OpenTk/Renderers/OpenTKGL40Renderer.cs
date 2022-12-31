@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Gwen.Net.OpenTk.Shaders;
-using OpenToolkit.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 
 namespace Gwen.Net.OpenTk.Renderers
 {
@@ -19,8 +19,6 @@ namespace Gwen.Net.OpenTk.Renderers
         private bool wasDepthTestEnabled;
         private int prevBlendSrc;
         private int prevBlendDst;
-        private int prevAlphaFunc;
-        private float prevAlphaRef;
 
         private int vbo;
         private int vao;
@@ -79,8 +77,6 @@ namespace Gwen.Net.OpenTk.Renderers
                 // Get previous parameter values before changing them.
                 GL.GetInteger(GetPName.BlendSrc, out prevBlendSrc);
                 GL.GetInteger(GetPName.BlendDst, out prevBlendDst);
-                GL.GetInteger(GetPName.AlphaTestFunc, out prevAlphaFunc);
-                GL.GetFloat(GetPName.AlphaTestRef, out prevAlphaRef);
 
                 wasBlendEnabled = GL.IsEnabled(EnableCap.Blend);
                 wasDepthTestEnabled = GL.IsEnabled(EnableCap.DepthTest);

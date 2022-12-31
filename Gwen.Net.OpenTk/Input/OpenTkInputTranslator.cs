@@ -1,11 +1,11 @@
 ﻿using System;
 using Gwen.Net.Control;
 using Gwen.Net.Input;
-using OpenToolkit.Mathematics;
-using OpenToolkit.Windowing.Common;
-using OpenToolkit.Windowing.Common.Input;
-
-using Key = OpenToolkit.Windowing.Common.Input.Key;
+using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.Common.Input;
+using OpenTK.Windowing.GraphicsLibraryFramework;
+using Key = OpenTK.Windowing.GraphicsLibraryFramework.Keys;
 
 namespace Gwen.Net.OpenTk.Input
 {
@@ -25,9 +25,9 @@ namespace Gwen.Net.OpenTk.Input
         {
             switch (key)
             {
-                case Key.BackSpace: return GwenMappedKey.Backspace;
+                case Key.Backspace: return GwenMappedKey.Backspace;
                 case Key.Enter: return GwenMappedKey.Return;
-                case Key.KeypadEnter: return GwenMappedKey.Return;
+                case Key.KeyPadEnter: return GwenMappedKey.Return;
                 case Key.Escape: return GwenMappedKey.Escape;
                 case Key.Tab: return GwenMappedKey.Tab;
                 case Key.Space: return GwenMappedKey.Space;
@@ -38,19 +38,19 @@ namespace Gwen.Net.OpenTk.Input
                 case Key.Home: return GwenMappedKey.Home;
                 case Key.End: return GwenMappedKey.End;
                 case Key.Delete: return GwenMappedKey.Delete;
-                case Key.LControl:
+                case Key.LeftControl:
                     controlPressed = true;
                     return GwenMappedKey.Control;
-                case Key.LAlt: return GwenMappedKey.Alt;
-                case Key.LShift: return GwenMappedKey.Shift;
-                case Key.RControl: return GwenMappedKey.Control;
-                case Key.RAlt:
+                case Key.LeftAlt: return GwenMappedKey.Alt;
+                case Key.LeftShift: return GwenMappedKey.Shift;
+                case Key.RightControl: return GwenMappedKey.Control;
+                case Key.RightAlt:
                     if (controlPressed)
                     {
                         canvas.Input_Key(GwenMappedKey.Control, false);
                     }
                     return GwenMappedKey.Alt;
-                case Key.RShift: return GwenMappedKey.Shift;
+                case Key.RightShift: return GwenMappedKey.Shift;
 
             }
             return GwenMappedKey.Invalid;

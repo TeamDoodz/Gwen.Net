@@ -58,7 +58,7 @@ namespace Gwen.Net.Control.Property
 		protected virtual void OnColorChanged(Control.ControlBase control, EventArgs args)
         {
             HSVColorPicker picker = control as HSVColorPicker;
-            SetTextFromColor(picker.SelectedColor);
+            SetTextFromColor(picker.SelectedColorRGB);
             DoChanged();
         }
 

@@ -7,12 +7,12 @@ using Gwen.Net.OpenTk.Input;
 using Gwen.Net.OpenTk.Platform;
 using Gwen.Net.Skin;
 using Gwen.Net.Tests.Components;
-using OpenToolkit.Graphics.OpenGL;
-using OpenToolkit.Mathematics;
-using OpenToolkit.Windowing.Common;
-using OpenToolkit.Windowing.Common.Input;
-using OpenToolkit.Windowing.Desktop;
-using OpenToolkit.Windowing.GraphicsLibraryFramework;
+using OpenTK.Graphics.OpenGL4;
+using OpenTK.Mathematics;
+using OpenTK.Windowing.Common;
+using OpenTK.Windowing.Common.Input;
+using OpenTK.Windowing.Desktop;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Gwen.Net.Tests
 {
@@ -31,7 +31,7 @@ namespace Gwen.Net.Tests
         {
             UpdateFrequency = 30;
 
-            gui = GwenGuiFactory.CreateFromGame(this, GwenGuiSettings.Default.From((settings) => 
+            gui = GwenGuiFactory.CreateFromGame(this, GwenGuiSettings.Default.Modify((settings) => 
             {
                 //Have the skin come from somewhere else.
                 settings.SkinFile = new System.IO.FileInfo("DefaultSkin2.png");

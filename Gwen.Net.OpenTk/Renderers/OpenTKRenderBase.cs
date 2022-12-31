@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using Gwen.Net.Renderer;
-using OpenToolkit.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 
 using Bitmap = System.Drawing.Bitmap;
-using PixelFormat = OpenToolkit.Graphics.OpenGL.PixelFormat;
+using PixelFormat = OpenTK.Graphics.OpenGL4.PixelFormat;
 using SizeF = System.Drawing.SizeF;
 
 namespace Gwen.Net.OpenTk.Renderers
@@ -328,7 +328,7 @@ namespace Gwen.Net.OpenTk.Renderers
             Bitmap bmp;
             try
             {
-                bmp = ImageLoader.Load(t.Name);
+				bmp = new(t.Name);
             }
             catch (Exception)
             {
@@ -346,8 +346,8 @@ namespace Gwen.Net.OpenTk.Renderers
 
             try
             {
-                bmp = ImageLoader.Load(t.Name);
-            }
+                bmp = new(t.Name);
+			}
             catch (Exception)
             {
                 t.Failed = true;

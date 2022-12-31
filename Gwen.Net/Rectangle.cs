@@ -93,7 +93,30 @@ namespace Gwen.Net
             Y += padding.Top;
         }
 
-        public static bool operator ==(Rectangle rect1, Rectangle rect2)
+		public static Rectangle ClampRectToRect(Rectangle inside, Rectangle outside, bool clampSize = false) {
+			if (inside.X < outside.X)
+				inside.X = outside.X;
+
+			if (inside.Y < outside.Y)
+				inside.Y = outside.Y;
+
+			if (inside.Right > outside.Right) {
+				if (clampSize)
+					inside.Width = outside.Width;
+				else
+					inside.X = outside.Right - inside.Width;
+			}
+			if (inside.Bottom > outside.Bottom) {
+				if (clampSize)
+					inside.Height = outside.Height;
+				else
+					inside.Y = outside.Bottom - inside.Height;
+			}
+
+			return inside;
+		}
+
+		public static bool operator ==(Rectangle rect1, Rectangle rect2)
         {
             return rect1.X == rect2.X && rect1.Y == rect2.Y && rect1.Width == rect2.Width && rect1.Height == rect2.Height;
         }

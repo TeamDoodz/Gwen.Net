@@ -1,15 +1,12 @@
 ﻿using System;
 
-namespace Gwen.Net.OpenTk.Exceptions
-{
-    public class ResourceLoaderNotFoundException : Exception
-    {
-        public string ResourceName { get; }
+namespace Gwen.Net.OpenTk.Exceptions;
 
-        public ResourceLoaderNotFoundException(string resourceName)
-            : base(string.Format(StringResources.ResourceLoaderNotFoundFormat, resourceName))
-        {
-            ResourceName = resourceName;
-        }
-    }
+public class ResourceLoaderNotFoundException : Exception {
+	public string ResourceName { get; }
+
+	public ResourceLoaderNotFoundException(string resourceName)
+		: base(string.Format(StringResources.ResourceLoaderNotFoundFormat, resourceName)) {
+		ResourceName = resourceName;
+	}
 }

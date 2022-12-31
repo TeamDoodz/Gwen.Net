@@ -1,13 +1,11 @@
 ﻿using System;
 
-namespace Gwen.Net.OpenTk.Shaders
-{
-    public interface IShader : IDisposable
-    {
-        int Program { get; }
-        int VertexShader { get; }
-        int FragmentShader { get; }
+namespace Gwen.Net.OpenTk.Shaders;
 
-        UniformDictionary Uniforms { get; }
-    }
+public interface IShader : IDisposable {
+	int Program { get; }
+	int VertexShader { get; }
+	int FragmentShader { get; }
+
+	UniformDictionary Uniforms { get; }
 }

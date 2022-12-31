@@ -1,17 +1,15 @@
 ﻿using System;
 using Gwen.Net.Control;
-using OpenToolkit.Mathematics;
+using OpenTK.Mathematics;
 
-namespace Gwen.Net.OpenTk
-{
-    public interface IGwenGui : IDisposable
-    {
-        ControlBase Root { get; }
+namespace Gwen.Net.OpenTk;
 
-        void Load();
+public interface IGwenGui : IDisposable {
+	ControlBase Root { get; }
 
-        void Resize(Vector2i newSize);
+	void Load();
 
-        void Render();
-    }
+	void Resize(Vector2i newSize);
+
+	void Render();
 }

@@ -8,34 +8,48 @@ namespace Gwen.Net.Control
     /// <summary>
     /// RGBA color picker.
     /// </summary>
-    public class ColorPicker : ControlBase, IColorPicker
+    public class RGBColorPicker : ControlBase, IColorPicker
     {
-        private Color m_Color;
+        private Color color;
 
         /// <summary>
         /// Selected color.
         /// </summary>
-        public Color SelectedColor { get { return m_Color; } set { m_Color = value; UpdateControls(); } }
+        public Color SelectedColorRGB {
+			get => color;
+			set { 
+				color = value; 
+				UpdateControls(); 
+			} 
+		}
+
+		public HSV SelectedColorHSV {
+			get => HSV.FromColor(color);
+			set {
+				color = value.ToColor();
+				UpdateControls();
+			}
+		}
 
         /// <summary>
         /// Red value of the selected color.
         /// </summary>
-        public int R { get { return m_Color.R; } set { m_Color = new Color(m_Color.A, value, m_Color.G, m_Color.B); } }
+        public int R { get { return color.R; } set { color = new Color(color.A, value, color.G, color.B); } }
 
         /// <summary>
         /// Green value of the selected color.
         /// </summary>
-        public int G { get { return m_Color.G; } set { m_Color = new Color(m_Color.A, m_Color.R, value, m_Color.B); } }
+        public int G { get { return color.G; } set { color = new Color(color.A, color.R, value, color.B); } }
 
         /// <summary>
         /// Blue value of the selected color.
         /// </summary>
-        public int B { get { return m_Color.B; } set { m_Color = new Color(m_Color.A, m_Color.R, m_Color.G, value); } }
+        public int B { get { return color.B; } set { color = new Color(color.A, color.R, color.G, value); } }
 
         /// <summary>
         /// Alpha value of the selected color.
         /// </summary>
-        public int A { get { return m_Color.A; } set { m_Color = new Color(value, m_Color.R, m_Color.G, m_Color.B); } }
+        public int A { get { return color.A; } set { color = new Color(value, color.R, color.G, color.B); } }
 
         /// <summary>
         /// Invoked when the selected color has been changed.
@@ -43,16 +57,16 @@ namespace Gwen.Net.Control
 		public event GwenEventHandler<EventArgs> ColorChanged;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ColorPicker"/> class.
+        /// Initializes a new instance of the <see cref="RGBColorPicker"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ColorPicker(ControlBase parent)
+        public RGBColorPicker(ControlBase parent)
             : base(parent)
         {
             MouseInputEnabled = true;
 
             CreateControls();
-            SelectedColor = new Color(255, 50, 60, 70);
+            SelectedColorRGB = new Color(255, 50, 60, 70);
         }
 
         private void CreateControls()
@@ -149,13 +163,13 @@ namespace Gwen.Net.Control
 
         private void UpdateControls()
         {	//This is a little weird, but whatever for now
-            UpdateColorControls("Red", new Color(255, SelectedColor.R, 0, 0), SelectedColor.R);
-            UpdateColorControls("Green", new Color(255, 0, SelectedColor.G, 0), SelectedColor.G);
-            UpdateColorControls("Blue", new Color(255, 0, 0, SelectedColor.B), SelectedColor.B);
-            UpdateColorControls("Alpha", new Color(SelectedColor.A, 255, 255, 255), SelectedColor.A);
+            UpdateColorControls("Red", new Color(255, SelectedColorRGB.R, 0, 0), SelectedColorRGB.R);
+            UpdateColorControls("Green", new Color(255, 0, SelectedColorRGB.G, 0), SelectedColorRGB.G);
+            UpdateColorControls("Blue", new Color(255, 0, 0, SelectedColorRGB.B), SelectedColorRGB.B);
+            UpdateColorControls("Alpha", new Color(SelectedColorRGB.A, 255, 255, 255), SelectedColorRGB.A);
 
             ColorDisplay disp = FindChildByName("Result", true) as ColorDisplay;
-            disp.Color = SelectedColor;
+            disp.Color = SelectedColorRGB;
 
             if (ColorChanged != null)
                 ColorChanged.Invoke(this, EventArgs.Empty);
@@ -181,13 +195,13 @@ namespace Gwen.Net.Control
         private int GetColorByName(string colorName)
         {
             if (colorName == "Red")
-                return SelectedColor.R;
+                return SelectedColorRGB.R;
             if (colorName == "Green")
-                return SelectedColor.G;
+                return SelectedColorRGB.G;
             if (colorName == "Blue")
-                return SelectedColor.B;
+                return SelectedColorRGB.B;
             if (colorName == "Alpha")
-                return SelectedColor.A;
+                return SelectedColorRGB.A;
             return 0;
         }
 
