@@ -1,163 +1,154 @@
 ﻿using System;
 using Gwen.Net.Control.Internal;
 
-namespace Gwen.Net.Control
-{
-    /// <summary>
-    /// Editable ComboBox control.
-    /// </summary>
-    [Xml.XmlControl(CustomHandler = "XmlElementHandler")]
-    public class EditableComboBox : ComboBoxBase
-    {
-        private readonly TextBox m_TextBox;
-        private readonly ComboBoxButton m_Button;
+namespace Gwen.Net.Control;
 
-        /// <summary>
-        /// Invoked when the text has changed.
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> TextChanged
-        {
-            add
-            {
-                m_TextBox.TextChanged += value;
-            }
-            remove
-            {
-                m_TextBox.TextChanged -= value;
-            }
-        }
+/// <summary>
+/// Editable ComboBox control.
+/// </summary>
+[Xml.XmlControl(CustomHandler = "XmlElementHandler")]
+public class EditableComboBox : ComboBoxBase {
+	private readonly TextBox textBox;
+	private readonly ComboBoxButton button;
 
-        /// <summary>
-        /// Invoked when the submit key has been pressed.
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> SubmitPressed
-        {
-            add
-            {
-                m_TextBox.SubmitPressed += value;
-            }
-            remove
-            {
-                m_TextBox.SubmitPressed -= value;
-            }
-        }
+	/// <summary>
+	/// Invoked when the text has changed.
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<EventArgs>? TextChanged {
+		add {
+			if(value == null) {
+				return;
+			}
+			textBox.TextChanged += value;
+		}
+		remove {
+			if(value == null) {
+				return;
+			}
+			textBox.TextChanged -= value;
+		}
+	}
 
-        /// <summary>
-        /// Text.
-        /// </summary>
-        [Xml.XmlProperty]
-        public virtual string Text { get { return m_TextBox.Text; } set { m_TextBox.SetText(value); } }
+	/// <summary>
+	/// Invoked when the submit key has been pressed.
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<EventArgs>? SubmitPressed {
+		add {
+			if(value == null) {
+				return;
+			}
+			textBox.SubmitPressed += value;
+		}
+		remove {
+			if(value == null) {
+				return;
+			}
+			textBox.SubmitPressed -= value;
+		}
+	}
 
-        /// <summary>
-        /// Text color.
-        /// </summary>
-        [Xml.XmlProperty]
-        public Color TextColor { get { return m_TextBox.TextColor; } set { m_TextBox.TextColor = value; } }
+	/// <summary>
+	/// Text.
+	/// </summary>
+	[Xml.XmlProperty]
+	public virtual string Text { get { return textBox.Text; } set { textBox.SetText(value); } }
 
-        /// <summary>
-        /// Font.
-        /// </summary>
-        [Xml.XmlProperty]
-        public Font Font { get { return m_TextBox.Font; } set { m_TextBox.Font = value; } }
+	/// <summary>
+	/// Text color.
+	/// </summary>
+	[Xml.XmlProperty]
+	public Color TextColor { get { return textBox.TextColor; } set { textBox.TextColor = value; } }
 
-        internal bool IsDepressed { get { return m_Button.IsDepressed; } }
+	/// <summary>
+	/// Font.
+	/// </summary>
+	[Xml.XmlProperty]
+	public Font? Font { get { return textBox.Font; } set { textBox.Font = value; } }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="EditableComboBox"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public EditableComboBox(ControlBase parent)
-            : base(parent)
-        {
-            m_TextBox = new TextBox(this);
+	internal bool IsDepressed { get { return button.IsDepressed; } }
 
-            m_Button = new ComboBoxButton(m_TextBox, this);
-            m_Button.Dock = Dock.Right;
-            m_Button.Clicked += OnClicked;
+	/// <summary>
+	/// Initializes a new instance of the <see cref="EditableComboBox"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	public EditableComboBox(ControlBase? parent)
+		: base(parent) {
+		textBox = new TextBox(this);
 
-            IsTabable = true;
-            KeyboardInputEnabled = true;
-        }
+		button = new ComboBoxButton(textBox, this);
+		button.Dock = Dock.Right;
+		button.Clicked += OnClicked;
 
-        /// <summary>
-        /// Internal Pressed implementation.
-        /// </summary>
-        private void OnClicked(ControlBase sender, ClickedEventArgs args)
-        {
-            if (IsOpen)
-            {
-                Close();
-            }
-            else
-            {
-                Open();
-            }
-        }
+		IsTabable = true;
+		KeyboardInputEnabled = true;
+	}
 
-        /// <summary>
-        /// Internal handler for item selected event.
-        /// </summary>
-        /// <param name="control">Event source.</param>
-        protected override void OnItemSelected(ControlBase control, ItemSelectedEventArgs args)
-        {
-            if (!IsDisabled)
-            {
-                MenuItem item = control as MenuItem;
-                if (null == item) return;
+	/// <summary>
+	/// Internal Pressed implementation.
+	/// </summary>
+	private void OnClicked(ControlBase sender, ClickedEventArgs args) {
+		if(IsOpen) {
+			Close();
+		} else {
+			Open();
+		}
+	}
 
-                m_TextBox.Text = item.Text;
-            }
+	/// <summary>
+	/// Internal handler for item selected event.
+	/// </summary>
+	/// <param name="control">Event source.</param>
+	protected override void OnItemSelected(ControlBase control, ItemSelectedEventArgs args) {
+		if(!IsDisabled) {
+			if(control is not MenuItem item) return;
 
-            base.OnItemSelected(control, args);
-        }
+			textBox.Text = item.Text;
+		}
 
-        protected override Size Measure(Size availableSize)
-        {
-            return m_TextBox.DoMeasure(availableSize);
-        }
+		base.OnItemSelected(control, args);
+	}
 
-        protected override Size Arrange(Size finalSize)
-        {
-            m_TextBox.DoArrange(new Rectangle(Point.Zero, finalSize));
+	protected override Size Measure(Size availableSize) {
+		return textBox.DoMeasure(availableSize);
+	}
 
-            return finalSize;
-        }
+	protected override Size Arrange(Size finalSize) {
+		textBox.DoArrange(new Rectangle(Point.Zero, finalSize));
 
-        /// <summary>
-        /// Renders the control using specified skin.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void Render(Skin.SkinBase skin)
-        {
-            skin.DrawComboBox(this, m_Button.IsDepressed, IsOpen);
-        }
+		return finalSize;
+	}
 
-        /// <summary>
-        /// Renders the focus overlay.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void RenderFocus(Skin.SkinBase skin)
-        {
+	/// <summary>
+	/// Renders the control using specified skin.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void Render(Skin.SkinBase skin) {
+		skin.DrawComboBox(this, button.IsDepressed, IsOpen);
+	}
 
-        }
+	/// <summary>
+	/// Renders the focus overlay.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void RenderFocus(Skin.SkinBase skin) {
 
-        internal static ControlBase XmlElementHandler(Xml.Parser parser, Type type, ControlBase parent)
-        {
-            EditableComboBox element = new EditableComboBox(parent);
-            parser.ParseAttributes(element);
-            if (parser.MoveToContent())
-            {
-                foreach (string elementName in parser.NextElement())
-                {
-                    if (elementName == "Option")
-                    {
-                        element.AddItem(parser.ParseElement<MenuItem>(element));
-                    }
-                }
-            }
-            return element;
-        }
-    }
+	}
+
+	internal static ControlBase XmlElementHandler(Xml.Parser parser, Type type, ControlBase parent) {
+		EditableComboBox element = new EditableComboBox(parent);
+		parser.ParseAttributes(element);
+		if(parser.MoveToContent()) {
+			foreach(string elementName in parser.NextElement()) {
+				if(elementName == "Option") {
+					MenuItem? item = parser.ParseElement<MenuItem>(element);
+					if(item != null) {
+						element.AddItem(item);
+					}
+				}
+			}
+		}
+		return element;
+	}
 }

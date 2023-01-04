@@ -1,38 +1,30 @@
 ﻿using System;
 
-namespace Gwen.Net.Control
-{
-    public class EnumRadioButtonGroup<T> : RadioButtonGroup where T : struct
-    {
-        public EnumRadioButtonGroup(ControlBase parent) : base(parent)
-        {
-            if (!typeof(T).IsEnum)
-                throw new Exception("T must be an enumerated type!");
+namespace Gwen.Net.Control;
+public class EnumRadioButtonGroup<T> : RadioButtonGroup where T : struct, Enum {
+	public EnumRadioButtonGroup(ControlBase? parent) : base(parent) {
+		T[] vals = Enum.GetValues<T>();
+		for(int i = 0; i < vals.Length; i++) {
+			string name = Enum.GetNames<T>()[i];
+			LabeledRadioButton lrb = AddOption(name);
+			lrb.UserData = vals.GetValue(i);
+		}
+	}
 
-            for (int i = 0; i < Enum.GetValues(typeof(T)).Length; i++)
-            {
-                string name = Enum.GetNames(typeof(T))[i];
-                LabeledRadioButton lrb = this.AddOption(name);
-                lrb.UserData = Enum.GetValues(typeof(T)).GetValue(i);
-            }
-        }
-
-        public T SelectedValue
-        {
-            get
-            {
-                return (T)this.Selected.UserData;
-            }
-            set
-            {
-                foreach (ControlBase child in Children)
-                {
-                    if (child is LabeledRadioButton && child.UserData.Equals(value))
-                    {
-                        (child as LabeledRadioButton).RadioButton.Press();
-                    }
-                }
-            }
-        }
-    }
+	public T? SelectedValue {
+		get {
+			if(Selected == null) return null;
+			return (T)(Selected.UserData ?? throw new Exception("EnumRadioButtonGroup user data is null. This shouldn't happen!"));
+		}
+		set {
+			foreach(ControlBase child in Children) {
+				if(child.UserData == null) {
+					throw new Exception("EnumRadioButtonGroup child user data is null. This shouldn't happen!");
+				}
+				if(child is LabeledRadioButton radioButton && child.UserData.Equals(value)) {
+					radioButton.RadioButton.Press();
+				}
+			}
+		}
+	}
 }

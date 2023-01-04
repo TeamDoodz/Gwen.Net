@@ -14,17 +14,17 @@ namespace Gwen.Net.Control.Internal
 
         protected override void OnChildAdded(ControlBase child)
         {
-            if (m_InnerPanel == null)
-                m_InnerPanel = Children[0];
+            if (innerPanel == null)
+                innerPanel = Children[0];
 
             base.OnChildAdded(child);
         }
 
         protected override Size Measure(Size availableSize)
         {
-            if (m_InnerPanel != null)
+            if (innerPanel != null)
             {
-                return m_InnerPanel.DoMeasure(availableSize - Padding) + Padding;
+                return innerPanel.DoMeasure(availableSize - Padding) + Padding;
             }
 
             return Size.Zero;
@@ -32,16 +32,16 @@ namespace Gwen.Net.Control.Internal
 
         protected override Size Arrange(Size finalSize)
         {
-            if (m_InnerPanel != null)
-                m_InnerPanel.DoArrange(new Rectangle(Padding.Left, Padding.Top, finalSize - Padding));
+            if (innerPanel != null)
+                innerPanel.DoArrange(new Rectangle(Padding.Left, Padding.Top, finalSize - Padding));
 
             return finalSize;
         }
 
-        public override ControlBase FindChildByName(string name, bool recursive = false)
+        public override ControlBase? FindChildByName(string name, bool recursive = false)
         {
-            if (m_InnerPanel != null && m_InnerPanel.Name == name)
-                return m_InnerPanel;
+            if (innerPanel != null && innerPanel.Name == name)
+                return innerPanel;
 
             return base.FindChildByName(name, recursive);
         }

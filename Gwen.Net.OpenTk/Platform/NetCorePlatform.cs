@@ -88,7 +88,7 @@ public class NetCorePlatform : IPlatform {
 	/// </summary>
 	/// <param name="cursor">Cursor type.</param>
 	public unsafe void SetCursor(Cursor cursor) {
-		MouseCursor translatedCursor = null;
+		MouseCursor? translatedCursor = null;
 		switch (cursor) {
 			case Cursor.Beam:
 				translatedCursor = MouseCursor.IBeam;
@@ -128,7 +128,7 @@ public class NetCorePlatform : IPlatform {
 
 		}
 
-		DriveInfo[] drives = null;
+		DriveInfo[]? drives = null;
 		try {
 			drives = DriveInfo.GetDrives();
 		} catch (Exception) { }
@@ -153,7 +153,7 @@ public class NetCorePlatform : IPlatform {
 		return Path.GetFileName(path);
 	}
 
-	public string GetDirectoryName(string path) {
+	public string? GetDirectoryName(string path) {
 		return Path.GetDirectoryName(path);
 	}
 

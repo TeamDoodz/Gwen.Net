@@ -1,210 +1,181 @@
 ﻿using System;
 using Gwen.Net.Control.Internal;
 
-namespace Gwen.Net.Control
-{
-    /// <summary>
-    /// CollapsibleCategory control. Used in CollapsibleList.
-    /// </summary>
-    public class CollapsibleCategory : ControlBase
-    {
-        private readonly CategoryHeaderButton m_HeaderButton;
-        private readonly CollapsibleList m_List;
+namespace Gwen.Net.Control;
 
-        /// <summary>
-        /// Header text.
-        /// </summary>
-        public string Text { get { return m_HeaderButton.Text; } set { m_HeaderButton.Text = value; } }
+/// <summary>
+/// CollapsibleCategory control. Used in CollapsibleList.
+/// </summary>
+public class CollapsibleCategory : ControlBase {
+	private readonly CategoryHeaderButton headerButton;
+	private readonly CollapsibleList list;
 
-        /// <summary>
-        /// Determines whether the category is collapsed (closed).
-        /// </summary>
-        public bool IsCategoryCollapsed { get { return m_HeaderButton.ToggleState; } set { m_HeaderButton.ToggleState = value; } }
+	/// <summary>
+	/// Header text.
+	/// </summary>
+	public string Text { get { return headerButton.Text; } set { headerButton.Text = value; } }
 
-        /// <summary>
-        /// Invoked when an entry has been selected.
-        /// </summary>
-		public event GwenEventHandler<ItemSelectedEventArgs> Selected;
+	/// <summary>
+	/// Determines whether the category is collapsed (closed).
+	/// </summary>
+	public bool IsCategoryCollapsed { get { return headerButton.ToggleState; } set { headerButton.ToggleState = value; } }
 
-        /// <summary>
-        /// Invoked when the category collapsed state has been changed (header button has been pressed).
-        /// </summary>
-		public event GwenEventHandler<EventArgs> Collapsed;
+	/// <summary>
+	/// Invoked when an entry has been selected.
+	/// </summary>
+	public event GwenEventHandler<ItemSelectedEventArgs>? Selected;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CollapsibleCategory"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public CollapsibleCategory(CollapsibleList parent) : base(parent)
-        {
-            m_HeaderButton = new CategoryHeaderButton(this);
-            m_HeaderButton.Text = "Category Title";
-            m_HeaderButton.Toggled += OnHeaderToggle;
+	/// <summary>
+	/// Invoked when the category collapsed state has been changed (header button has been pressed).
+	/// </summary>
+	public event GwenEventHandler<EventArgs>? Collapsed;
 
-            m_List = parent;
+	/// <summary>
+	/// Initializes a new instance of the <see cref="CollapsibleCategory"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	public CollapsibleCategory(CollapsibleList parent) : base(parent) {
+		headerButton = new CategoryHeaderButton(this);
+		headerButton.Text = "Category Title";
+		headerButton.Toggled += OnHeaderToggle;
 
-            Padding = new Padding(1, 0, 1, 2);
-        }
+		list = parent;
 
-        /// <summary>
-        /// Gets the selected entry.
-        /// </summary>
-        public Button GetSelectedButton()
-        {
-            foreach (ControlBase child in Children)
-            {
-                CategoryButton button = child as CategoryButton;
-                if (button == null)
-                    continue;
+		Padding = new Padding(1, 0, 1, 2);
+	}
 
-                if (button.ToggleState)
-                    return button;
-            }
+	/// <summary>
+	/// Gets the selected entry.
+	/// </summary>
+	public Button? GetSelectedButton() {
+		foreach(ControlBase child in Children) {
+			if(child is not CategoryButton button) {
+				continue;
+			}
 
-            return null;
-        }
+			if(button.ToggleState)
+				return button;
+		}
 
-        /// <summary>
-        /// Handler for header button toggle event.
-        /// </summary>
-        /// <param name="control">Source control.</param>
-		protected virtual void OnHeaderToggle(ControlBase control, EventArgs args)
-        {
-            Invalidate();
+		return null;
+	}
 
-            if (Collapsed != null)
-                Collapsed.Invoke(this, EventArgs.Empty);
-        }
+	/// <summary>
+	/// Handler for header button toggle event.
+	/// </summary>
+	/// <param name="control">Source control.</param>
+	protected virtual void OnHeaderToggle(ControlBase control, EventArgs args) {
+		Invalidate();
 
-        /// <summary>
-        /// Handler for Selected event.
-        /// </summary>
-        /// <param name="control">Event source.</param>
-		protected virtual void OnSelected(ControlBase control, EventArgs args)
-        {
-            CategoryButton child = control as CategoryButton;
-            if (child == null) return;
+		if(Collapsed != null)
+			Collapsed.Invoke(this, EventArgs.Empty);
+	}
 
-            if (m_List != null)
-            {
-                m_List.UnselectAll();
-            }
-            else
-            {
-                UnselectAll();
-            }
+	/// <summary>
+	/// Handler for Selected event.
+	/// </summary>
+	/// <param name="control">Event source.</param>
+	protected virtual void OnSelected(ControlBase control, EventArgs args) {
+		if(control is not CategoryButton child) return;
 
-            child.ToggleState = true;
+		if(list != null) {
+			list.UnselectAll();
+		} else {
+			UnselectAll();
+		}
 
-            if (Selected != null)
-                Selected.Invoke(this, new ItemSelectedEventArgs(control));
-        }
+		child.ToggleState = true;
 
-        /// <summary>
-        /// Adds a new entry.
-        /// </summary>
-        /// <param name="name">Entry name (displayed).</param>
-        /// <returns>Newly created control.</returns>
-        public Button Add(string name)
-        {
-            CategoryButton button = new CategoryButton(this);
-            button.Text = name;
-            button.Padding = new Padding(5, 2, 2, 2);
-            button.Clicked += OnSelected;
+		Selected?.Invoke(this, new ItemSelectedEventArgs(control));
+	}
 
-            Invalidate();
+	/// <summary>
+	/// Adds a new entry.
+	/// </summary>
+	/// <param name="name">Entry name (displayed).</param>
+	/// <returns>Newly created control.</returns>
+	public Button Add(string name) {
+		CategoryButton button = new CategoryButton(this);
+		button.Text = name;
+		button.Padding = new Padding(5, 2, 2, 2);
+		button.Clicked += OnSelected;
 
-            return button;
-        }
+		Invalidate();
 
-        /// <summary>
-        /// Renders the control using specified skin.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void Render(Skin.SkinBase skin)
-        {
-            skin.DrawCategoryInner(this, m_HeaderButton.ActualHeight, m_HeaderButton.ToggleState);
-            base.Render(skin);
-        }
+		return button;
+	}
 
-        /// <summary>
-        /// Unselects all entries.
-        /// </summary>
-        public void UnselectAll()
-        {
-            foreach (ControlBase child in Children)
-            {
-                CategoryButton button = child as CategoryButton;
-                if (button == null)
-                    continue;
+	/// <summary>
+	/// Renders the control using specified skin.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void Render(Skin.SkinBase skin) {
+		skin.DrawCategoryInner(this, headerButton.ActualHeight, headerButton.ToggleState);
+		base.Render(skin);
+	}
 
-                button.ToggleState = false;
-            }
-        }
+	/// <summary>
+	/// Unselects all entries.
+	/// </summary>
+	public void UnselectAll() {
+		foreach(ControlBase child in Children) {
+			if(child is not CategoryButton button)
+				continue;
 
-        protected override Size Measure(Size availableSize)
-        {
-            Size headerSize = m_HeaderButton.DoMeasure(availableSize);
+			button.ToggleState = false;
+		}
+	}
 
-            if (IsCategoryCollapsed)
-            {
-                return headerSize;
-            }
-            else
-            {
-                int width = headerSize.Width;
-                int height = headerSize.Height + Padding.Top + Padding.Bottom;
+	protected override Size Measure(Size availableSize) {
+		Size headerSize = headerButton.DoMeasure(availableSize);
 
-                foreach (ControlBase child in Children)
-                {
-                    CategoryButton button = child as CategoryButton;
-                    if (button == null)
-                        continue;
+		if(IsCategoryCollapsed) {
+			return headerSize;
+		} else {
+			int width = headerSize.Width;
+			int height = headerSize.Height + Padding.Top + Padding.Bottom;
 
-                    Size size = child.DoMeasure(availableSize);
-                    if (size.Width > width)
-                        width = child.Width;
-                    height += size.Height;
-                }
+			foreach(ControlBase child in Children) {
+				if(child is not CategoryButton button)
+					continue;
 
-                width += Padding.Left + Padding.Right;
+				Size size = child.DoMeasure(availableSize);
+				if(size.Width > width)
+					width = child.Width;
+				height += size.Height;
+			}
 
-                return new Size(width, height);
-            }
-        }
+			width += Padding.Left + Padding.Right;
 
-        protected override Size Arrange(Size finalSize)
-        {
-            m_HeaderButton.DoArrange(new Rectangle(0, 0, finalSize.Width, m_HeaderButton.MeasuredSize.Height));
+			return new Size(width, height);
+		}
+	}
 
-            if (IsCategoryCollapsed)
-            {
-                return new Size(finalSize.Width, m_HeaderButton.MeasuredSize.Height);
-            }
-            else
-            {
-                int y = m_HeaderButton.MeasuredSize.Height + Padding.Top;
-                int width = finalSize.Width - Padding.Left - Padding.Right;
-                bool b = true;
+	protected override Size Arrange(Size finalSize) {
+		headerButton.DoArrange(new Rectangle(0, 0, finalSize.Width, headerButton.MeasuredSize.Height));
 
-                foreach (ControlBase child in Children)
-                {
-                    CategoryButton button = child as CategoryButton;
-                    if (button == null)
-                        continue;
+		if(IsCategoryCollapsed) {
+			return new Size(finalSize.Width, headerButton.MeasuredSize.Height);
+		} else {
+			int y = headerButton.MeasuredSize.Height + Padding.Top;
+			int width = finalSize.Width - Padding.Left - Padding.Right;
+			bool b = true;
 
-                    button.m_Alt = b;
-                    button.UpdateColors();
-                    b = !b;
+			foreach(ControlBase child in Children) {
+				if(child is not CategoryButton button)
+					continue;
 
-                    child.DoArrange(new Rectangle(Padding.Left, y, width, child.MeasuredSize.Height));
-                    y += child.MeasuredSize.Height;
-                }
+				button.m_Alt = b;
+				button.UpdateColors();
+				b = !b;
 
-                y += Padding.Bottom;
+				child.DoArrange(new Rectangle(Padding.Left, y, width, child.MeasuredSize.Height));
+				y += child.MeasuredSize.Height;
+			}
 
-                return new Size(finalSize.Width, y);
-            }
-        }
-    }
+			y += Padding.Bottom;
+
+			return new Size(finalSize.Width, y);
+		}
+	}
 }

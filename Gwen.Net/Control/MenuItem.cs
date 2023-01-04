@@ -1,289 +1,257 @@
 ﻿using System;
 using Gwen.Net.Control.Internal;
 
-namespace Gwen.Net.Control
-{
-    /// <summary>
-    /// Menu item.
-    /// </summary>
-    [Xml.XmlControl(CustomHandler = "XmlElementHandler")]
-    public class MenuItem : Button
-    {
-        private bool m_Checkable;
-        private bool m_Checked;
-        private Menu m_Menu;
-        private ControlBase m_SubmenuArrow;
-        private Label m_Accelerator;
+namespace Gwen.Net.Control;
 
-        /// <summary>
-        /// Indicates whether the item is on a menu strip.
-        /// </summary>
-        public bool IsOnStrip { get { return Parent is MenuStrip; } }
+/// <summary>
+/// Menu item.
+/// </summary>
+[Xml.XmlControl(CustomHandler = "XmlElementHandler")]
+public class MenuItem : Button {
+	private bool checkable;
+	private bool isChecked;
+	private Menu? menu;
+	private ControlBase? submenuArrow;
+	private Label? accelerator;
 
-        /// <summary>
-        /// Determines if the menu item is checkable.
-        /// </summary>
-        [Xml.XmlProperty]
-        public bool IsCheckable { get { return m_Checkable; } set { m_Checkable = value; } }
+	/// <summary>
+	/// Indicates whether the item is on a menu strip.
+	/// </summary>
+	public bool IsOnStrip { get { return Parent is MenuStrip; } }
 
-        /// <summary>
-        /// Indicates if the parent menu is open.
-        /// </summary>
-        public bool IsMenuOpen { get { if (m_Menu == null) return false; return !m_Menu.IsCollapsed; } }
+	/// <summary>
+	/// Determines if the menu item is checkable.
+	/// </summary>
+	[Xml.XmlProperty]
+	public bool IsCheckable { get { return checkable; } set { checkable = value; } }
 
-        /// <summary>
-        /// Gets or sets the check value.
-        /// </summary>
-        [Xml.XmlProperty]
-        public bool IsChecked
-        {
-            get { return m_Checked; }
-            set
-            {
-                if (value == m_Checked)
-                    return;
+	/// <summary>
+	/// Indicates if the parent menu is open.
+	/// </summary>
+	public bool IsMenuOpen { get { if(menu == null) return false; return !menu.IsCollapsed; } }
 
-                m_Checked = value;
+	/// <summary>
+	/// Gets or sets the check value.
+	/// </summary>
+	[Xml.XmlProperty]
+	public bool IsChecked {
+		get { return isChecked; }
+		set {
+			if(value == isChecked)
+				return;
 
-                if (CheckChanged != null)
-                    CheckChanged.Invoke(this, EventArgs.Empty);
+			isChecked = value;
 
-                if (value)
-                {
-                    if (Checked != null)
-                        Checked.Invoke(this, EventArgs.Empty);
-                }
-                else
-                {
-                    if (UnChecked != null)
-                        UnChecked.Invoke(this, EventArgs.Empty);
-                }
-            }
-        }
+			if(CheckChanged != null)
+				CheckChanged.Invoke(this, EventArgs.Empty);
 
-        /// <summary>
-        /// Gets the parent menu.
-        /// </summary>
-        public Menu Menu
-        {
-            get
-            {
-                if (null == m_Menu)
-                {
-                    m_Menu = new Menu(GetCanvas());
-                    m_Menu.ParentMenuItem = this;
+			if(value) {
+				if(Checked != null)
+					Checked.Invoke(this, EventArgs.Empty);
+			} else {
+				if(UnChecked != null)
+					UnChecked.Invoke(this, EventArgs.Empty);
+			}
+		}
+	}
 
-                    if (!IsOnStrip)
-                    {
-                        if (m_SubmenuArrow != null)
-                            m_SubmenuArrow.Dispose();
-                        m_SubmenuArrow = new RightArrow(this);
-                    }
-                }
+	/// <summary>
+	/// Gets the parent menu.
+	/// </summary>
+	public Menu Menu {
+		get {
+			if(null == menu) {
+				menu = new Menu(GetCanvas());
+				menu.ParentMenuItem = this;
 
-                return m_Menu;
-            }
-        }
+				if(!IsOnStrip) {
+					if(submenuArrow != null)
+						submenuArrow.Dispose();
+					submenuArrow = new RightArrow(this);
+				}
+			}
 
-        /// <summary>
-        /// Invoked when the item is selected.
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<ItemSelectedEventArgs> Selected;
+			return menu;
+		}
+	}
 
-        /// <summary>
-        /// Invoked when the item is checked.
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> Checked;
+	/// <summary>
+	/// Invoked when the item is selected.
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<ItemSelectedEventArgs>? Selected;
 
-        /// <summary>
-        /// Invoked when the item is unchecked.
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> UnChecked;
+	/// <summary>
+	/// Invoked when the item is checked.
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<EventArgs>? Checked;
 
-        /// <summary>
-        /// Invoked when the item's check value is changed.
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> CheckChanged;
+	/// <summary>
+	/// Invoked when the item is unchecked.
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<EventArgs>? UnChecked;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MenuItem"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public MenuItem(ControlBase parent)
-            : base(parent)
-        {
-            IsTabable = false;
-            IsCheckable = false;
-            IsChecked = false;
-        }
+	/// <summary>
+	/// Invoked when the item's check value is changed.
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<EventArgs>? CheckChanged;
 
-        /// <summary>
-        /// Renders the control using specified skin.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void Render(Skin.SkinBase skin)
-        {
-            skin.DrawMenuItem(this, IsMenuOpen, m_Checkable ? m_Checked : false);
-        }
+	/// <summary>
+	/// Initializes a new instance of the <see cref="MenuItem"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	public MenuItem(ControlBase? parent)
+		: base(parent) {
+		IsTabable = false;
+		IsCheckable = false;
+		IsChecked = false;
+	}
 
-        protected override Size Measure(Size availableSize)
-        {
-            Size size = base.Measure(availableSize);
-            if (m_Accelerator != null)
-            {
-                Size accSize = m_Accelerator.DoMeasure(availableSize);
-                size.Width += accSize.Width;
-            }
-            if (m_SubmenuArrow != null)
-            {
-                m_SubmenuArrow.DoMeasure(availableSize);
-            }
+	/// <summary>
+	/// Renders the control using specified skin.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void Render(Skin.SkinBase skin) {
+		skin.DrawMenuItem(this, IsMenuOpen, checkable ? isChecked : false);
+	}
 
-            return size;
-        }
+	protected override Size Measure(Size availableSize) {
+		Size size = base.Measure(availableSize);
+		if(accelerator != null) {
+			Size accSize = accelerator.DoMeasure(availableSize);
+			size.Width += accSize.Width;
+		}
+		if(submenuArrow != null) {
+			submenuArrow.DoMeasure(availableSize);
+		}
 
-        protected override Size Arrange(Size finalSize)
-        {
-            if (m_SubmenuArrow != null)
-                m_SubmenuArrow.DoArrange(new Rectangle(finalSize.Width - Padding.Right - m_SubmenuArrow.MeasuredSize.Width, (finalSize.Height - m_SubmenuArrow.MeasuredSize.Height) / 2, m_SubmenuArrow.MeasuredSize.Width, m_SubmenuArrow.MeasuredSize.Height));
+		return size;
+	}
 
-            if (m_Accelerator != null)
-                m_Accelerator.DoArrange(new Rectangle(finalSize.Width - Padding.Right - m_Accelerator.MeasuredSize.Width, (finalSize.Height - m_Accelerator.MeasuredSize.Height) / 2, m_Accelerator.MeasuredSize.Width, m_Accelerator.MeasuredSize.Height));
+	protected override Size Arrange(Size finalSize) {
+		if(submenuArrow != null)
+			submenuArrow.DoArrange(new Rectangle(finalSize.Width - Padding.Right - submenuArrow.MeasuredSize.Width, (finalSize.Height - submenuArrow.MeasuredSize.Height) / 2, submenuArrow.MeasuredSize.Width, submenuArrow.MeasuredSize.Height));
 
-            return base.Arrange(finalSize);
-        }
+		if(accelerator != null)
+			accelerator.DoArrange(new Rectangle(finalSize.Width - Padding.Right - accelerator.MeasuredSize.Width, (finalSize.Height - accelerator.MeasuredSize.Height) / 2, accelerator.MeasuredSize.Width, accelerator.MeasuredSize.Height));
 
-        /// <summary>
-        /// Internal OnPressed implementation.
-        /// </summary>
-        protected override void OnClicked(int x, int y)
-        {
-            if (m_Menu != null)
-            {
-                if (!IsMenuOpen)
-                    OpenMenu();
-            }
-            else if (!IsOnStrip)
-            {
-                IsChecked = !IsChecked;
-                if (Selected != null)
-                    Selected.Invoke(this, new ItemSelectedEventArgs(this));
-                GetCanvas().CloseMenus();
-            }
-            base.OnClicked(x, y);
-        }
+		return base.Arrange(finalSize);
+	}
 
-        /// <summary>
-        /// Toggles the menu open state.
-        /// </summary>
-        public void ToggleMenu()
-        {
-            if (IsMenuOpen)
-                CloseMenu();
-            else
-                OpenMenu();
-        }
+	/// <summary>
+	/// Internal OnPressed implementation.
+	/// </summary>
+	protected override void OnClicked(int x, int y) {
+		if(menu != null) {
+			if(!IsMenuOpen)
+				OpenMenu();
+		} else if(!IsOnStrip) {
+			IsChecked = !IsChecked;
+			if(Selected != null)
+				Selected.Invoke(this, new ItemSelectedEventArgs(this));
+			GetCanvas().CloseMenus();
+		}
+		base.OnClicked(x, y);
+	}
 
-        /// <summary>
-        /// Opens the menu.
-        /// </summary>
-        public void OpenMenu()
-        {
-            if (null == m_Menu) return;
+	/// <summary>
+	/// Toggles the menu open state.
+	/// </summary>
+	public void ToggleMenu() {
+		if(IsMenuOpen)
+			CloseMenu();
+		else
+			OpenMenu();
+	}
 
-            m_Menu.Show();
-            m_Menu.BringToFront();
+	/// <summary>
+	/// Opens the menu.
+	/// </summary>
+	public void OpenMenu() {
+		if(null == menu) return;
 
-            Point p = LocalPosToCanvas(Point.Zero);
+		menu.Show();
+		menu.BringToFront();
 
-            // Strip menus open downwards
-            if (IsOnStrip)
-            {
-                m_Menu.Position = new Point(p.X, p.Y + ActualHeight - 2);
-            }
-            // Submenus open sidewards
-            else
-            {
-                m_Menu.Position = new Point(p.X + ActualWidth, p.Y);
-            }
+		Point p = LocalPosToCanvas(Point.Zero);
 
-            // TODO: Option this.
-            // TODO: Make sure on screen, open the other side of the 
-            // parent if it's better...
-        }
+		// Strip menus open downwards
+		if(IsOnStrip) {
+			menu.Position = new Point(p.X, p.Y + ActualHeight - 2);
+		}
+		// Submenus open sidewards
+		else {
+			menu.Position = new Point(p.X + ActualWidth, p.Y);
+		}
 
-        /// <summary>
-        /// Closes the menu.
-        /// </summary>
-        public void CloseMenu()
-        {
-            if (null == m_Menu) return;
-            m_Menu.Close();
-            m_Menu.CloseAll();
-        }
+		// TODO: Option this.
+		// TODO: Make sure on screen, open the other side of the 
+		// parent if it's better...
+	}
 
-        public MenuItem SetAction(GwenEventHandler<EventArgs> handler)
-        {
-            if (m_Accelerator != null)
-            {
-                AddAccelerator(m_Accelerator.Text, handler);
-            }
+	/// <summary>
+	/// Closes the menu.
+	/// </summary>
+	public void CloseMenu() {
+		if(null == menu) return;
+		menu.Close();
+		menu.CloseAll();
+	}
 
-            Selected += handler;
-            return this;
-        }
+	public MenuItem SetAction(GwenEventHandler<EventArgs> handler) {
+		if(accelerator != null) {
+			AddAccelerator(accelerator.Text, handler);
+		}
 
-        public void SetAccelerator(string acc)
-        {
-            if (m_Accelerator != null)
-            {
-                m_Accelerator = null;
-            }
+		Selected += handler;
+		return this;
+	}
 
-            if (acc == String.Empty)
-                return;
+	public void SetAccelerator(string acc) {
+		if(accelerator != null) {
+			accelerator = null;
+		}
 
-            m_Accelerator = new Label(this);
-            m_Accelerator.Text = acc;
-            m_Accelerator.Margin = new Margin(0, 0, 16, 0);
-        }
+		if(acc == String.Empty)
+			return;
 
-        public override ControlBase FindChildByName(string name, bool recursive = false)
-        {
-            ControlBase item = base.FindChildByName(name, recursive);
-            if (item == null && m_Menu != null)
-            {
-                item = m_Menu.FindChildByName(name, recursive);
-            }
+		accelerator = new Label(this);
+		accelerator.Text = acc;
+		accelerator.Margin = new Margin(0, 0, 16, 0);
+	}
 
-            return item;
-        }
+	public override ControlBase? FindChildByName(string name, bool recursive = false) {
+		ControlBase? item = base.FindChildByName(name, recursive);
+		if(item == null && menu != null) {
+			item = menu.FindChildByName(name, recursive);
+		}
 
-        internal static ControlBase XmlElementHandler(Xml.Parser parser, Type type, ControlBase parent)
-        {
-            MenuItem element = new MenuItem(parent);
-            parser.ParseAttributes(element);
-            if (parser.MoveToContent())
-            {
-                ControlBase e = parent;
-                while (e != null && e.Component == null)
-                    e = e.Parent;
+		return item;
+	}
 
-                foreach (string elementName in parser.NextElement())
-                {
-                    if (elementName == "MenuItem")
-                        element.Menu.AddItem(parser.ParseElement<MenuItem>(element));
-                    else if (elementName == "MenuDivider")
-                        element.Menu.AddDivider();
+	internal static ControlBase XmlElementHandler(Xml.Parser parser, Type type, ControlBase parent) {
+		MenuItem element = new MenuItem(parent);
+		parser.ParseAttributes(element);
+		if(parser.MoveToContent()) {
+			ControlBase? e = parent;
+			while(e != null && e.Component == null)
+				e = e.Parent;
 
-                    element.Menu.Component = e != null ? e.Component : null;
-                }
-            }
-            return element;
-        }
-    }
+			foreach(string elementName in parser.NextElement()) {
+				if(elementName == "MenuItem") {
+					MenuItem? item = parser.ParseElement<MenuItem>(element);
+					if(item != null) {
+						element.Menu.AddItem(item);
+					}
+				} else if(elementName == "MenuDivider")
+					element.Menu.AddDivider();
+
+				element.Menu.Component = e?.Component;
+			}
+		}
+		return element;
+	}
 }

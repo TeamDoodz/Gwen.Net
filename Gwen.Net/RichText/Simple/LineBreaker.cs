@@ -2,208 +2,178 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Gwen.Net.RichText.Simple
-{
-    internal class LineBreaker : RichText.LineBreaker
-    {
-        public LineBreaker(Renderer.RendererBase renderer, Font defaultFont)
-            : base(renderer, defaultFont)
-        {
+namespace Gwen.Net.RichText.Simple;
 
-        }
+internal class LineBreaker : RichText.LineBreaker {
+	public LineBreaker(Renderer.RendererBase renderer, Font defaultFont)
+		: base(renderer, defaultFont) {
 
-        public override List<TextBlock> LineBreak(Paragraph paragraph, int totalWidth)
-        {
-            List<Node> nodes = Split(paragraph);
+	}
 
-            int lineWidth = totalWidth - paragraph.Margin.Left - paragraph.Margin.Right - paragraph.FirstIndent;
+	public override List<TextBlock> LineBreak(Paragraph paragraph, int totalWidth) {
+		List<Node> nodes = Split(paragraph);
 
-            List<TextBlock> textBlocks = new List<TextBlock>();
+		int lineWidth = totalWidth - paragraph.Margin.Left - paragraph.Margin.Right - paragraph.FirstIndent;
 
-            int lineStart = 0;
-            int lineStop;
-            int w = 0;
-            int y = 0;
-            int x = paragraph.FirstIndent;
-            int index = 0;
+		List<TextBlock> textBlocks = new List<TextBlock>();
 
-            while (index < nodes.Count)
-            {
-                w += nodes[index].Size.Width;
-                if (w > lineWidth || index == (nodes.Count - 1) || nodes[index].IsLineBreak)
-                {
-                    lineStop = index;
+		int lineStart = 0;
+		int lineStop;
+		int w = 0;
+		int y = 0;
+		int x = paragraph.FirstIndent;
+		int index = 0;
 
-                    if (w > lineWidth)
-                    {
-                        if (lineStart == index)
-                            index++; // Too long word to fit on the line
-                        else
-                            lineStop--;
-                    }
-                    else if (nodes[index].IsLineBreak)
-                    {
-                        lineStop--;
-                        index++;
-                    }
-                    else
-                    {
-                        index++;
-                    }
+		while(index < nodes.Count) {
+			w += nodes[index].Size.Width;
+			if(w > lineWidth || index == (nodes.Count - 1) || nodes[index].IsLineBreak) {
+				lineStop = index;
 
-                    while (lineStop > lineStart && nodes[lineStop].IsSpace)
-                        lineStop--;
+				if(w > lineWidth) {
+					if(lineStart == index)
+						index++; // Too long word to fit on the line
+					else
+						lineStop--;
+				} else if(nodes[index].IsLineBreak) {
+					lineStop--;
+					index++;
+				} else {
+					index++;
+				}
 
-                    int height = 0;
-                    int baseline = 0;
-                    for (int i = lineStart; i <= lineStop; i++)
-                    {
-                        height = Math.Max(height, nodes[i].Size.Height);
-                        baseline = Math.Max(baseline, (int)((TextPart)nodes[i].Part).Font.FontMetrics.Baseline);
-                    }
+				while(lineStop > lineStart && nodes[lineStop].IsSpace)
+					lineStop--;
 
-                    StringBuilder str = new StringBuilder(1000);
-                    Part part = nodes[lineStart].Part;
-                    int blockStart = lineStart;
+				int height = 0;
+				int baseline = 0;
+				for(int i = lineStart; i <= lineStop; i++) {
+					height = Math.Max(height, nodes[i].Size.Height);
+					Font font = (nodes[i].Part as TextPart)?.Font ?? DefaultFont;
+					baseline = Math.Max(baseline, (int)font.FontMetrics.Baseline);
+				}
 
-                    for (int i = lineStart; i <= lineStop; i++)
-                    {
-                        if (i == lineStop || nodes[i + 1].Part != part)
-                        {
-                            TextBlock textBlock = new TextBlock();
-                            textBlock.Part = part;
-                            str.Clear();
+				StringBuilder str = new StringBuilder(1000);
+				Part? part = nodes[lineStart].Part;
+				int blockStart = lineStart;
 
-                            int h = 0;
-                            for (int k = blockStart; k <= i; k++)
-                            {
-                                if (nodes[k].IsSpace)
-                                {
-                                    str.Append(' ');
-                                }
-                                else
-                                {
-                                    str.Append(nodes[k].Text);
-                                    h = Math.Max(h, nodes[k].Size.Height);
-                                }
-                            }
+				for(int i = lineStart; i <= lineStop; i++) {
+					if(i == lineStop || nodes[i + 1].Part != part) {
+						TextBlock textBlock = new TextBlock();
+						textBlock.Part = part;
+						str.Clear();
 
-                            textBlock.Position = new Point(x, y + baseline - (int)((TextPart)part).Font.FontMetrics.Baseline);
-                            textBlock.Text = str.ToString();
-                            textBlock.Size = new Size(Renderer.MeasureText(((TextPart)part).Font, textBlock.Text).Width, h);
+						int h = 0;
+						for(int k = blockStart; k <= i; k++) {
+							if(nodes[k].IsSpace) {
+								str.Append(' ');
+							} else {
+								str.Append(nodes[k].Text);
+								h = Math.Max(h, nodes[k].Size.Height);
+							}
+						}
 
-                            x += textBlock.Size.Width;
+						{
+							Font font = (part as TextPart)?.Font ?? DefaultFont;
 
-                            textBlocks.Add(textBlock);
+							textBlock.Position = new Point(x, y + baseline - (int)font.FontMetrics.Baseline);
+							textBlock.Text = str.ToString();
+							textBlock.Size = new Size(Renderer.MeasureText(font, textBlock.Text).Width, h);
+						}
 
-                            blockStart = i + 1;
-                            if (blockStart <= lineStop)
-                                part = nodes[blockStart].Part;
-                        }
-                    }
+						x += textBlock.Size.Width;
 
-                    while (index < nodes.Count && nodes[index].IsSpace)
-                        index++;
+						textBlocks.Add(textBlock);
 
-                    lineStart = index;
-                    y += height;
-                    x = paragraph.RemainigIndent;
-                    w = 0;
+						blockStart = i + 1;
+						if(blockStart <= lineStop)
+							part = nodes[blockStart].Part;
+					}
+				}
 
-                    lineWidth = totalWidth - paragraph.Margin.Left - paragraph.Margin.Right - paragraph.RemainigIndent;
-                }
-                else
-                {
-                    index++;
-                }
-            }
+				while(index < nodes.Count && nodes[index].IsSpace)
+					index++;
 
-            return textBlocks;
-        }
+				lineStart = index;
+				y += height;
+				x = paragraph.RemainigIndent;
+				w = 0;
 
-        private List<Node> Split(Paragraph paragraph)
-        {
-            List<Node> nodes = new List<Node>();
+				lineWidth = totalWidth - paragraph.Margin.Left - paragraph.Margin.Right - paragraph.RemainigIndent;
+			} else {
+				index++;
+			}
+		}
 
-            Font font = DefaultFont;
+		return textBlocks;
+	}
 
-            for (int partIndex = 0; partIndex < paragraph.Parts.Count; partIndex++)
-            {
-                Part part = paragraph.Parts[partIndex];
+	private List<Node> Split(Paragraph paragraph) {
+		List<Node> nodes = new List<Node>();
 
-                string[] words = part.Split(ref font);
-                if (font == null)
-                    font = DefaultFont;
+		Font? font = DefaultFont;
 
-                for (int wordIndex = 0; wordIndex < words.Length; wordIndex++)
-                {
-                    string word = words[wordIndex];
+		for(int partIndex = 0; partIndex < paragraph.Parts.Count; partIndex++) {
+			Part part = paragraph.Parts[partIndex];
 
-                    if (word[0] == ' ')
-                    {
-                        nodes.Add(new Node(Renderer.MeasureText(font, word), part));
-                    }
-                    else if (word[0] == '\n')
-                    {
-                        if (nodes.Count > 0)
-                        {
-                            if (nodes[nodes.Count - 1].IsLineBreak)
-                                nodes.Add(new Node(" ", Renderer.MeasureText(font, " "), nodes[nodes.Count - 2].Part));
-                            nodes.Add(new Node());
-                        }
-                    }
-                    else
-                    {
-                        nodes.Add(new Node(word, Renderer.MeasureText(font, word), part));
-                    }
-                }
-            }
+			string[] words = part.Split(ref font);
+			font ??= DefaultFont;
 
-            return nodes;
-        }
+			for(int wordIndex = 0; wordIndex < words.Length; wordIndex++) {
+				string word = words[wordIndex];
 
-        private class Node
-        {
-            public string Text;
-            public Size Size;
-            public Part Part;
+				if(word[0] == ' ') {
+					nodes.Add(new Node(Renderer.MeasureText(font, word), part));
+				} else if(word[0] == '\n') {
+					if(nodes.Count > 0) {
+						if(nodes[nodes.Count - 1].IsLineBreak)
+							nodes.Add(new Node(" ", Renderer.MeasureText(font, " "), nodes[nodes.Count - 2].Part));
+						nodes.Add(new Node());
+					}
+				} else {
+					nodes.Add(new Node(word, Renderer.MeasureText(font, word), part));
+				}
+			}
+		}
 
-            public Node(string text, Size size, Part part)
-            {
-                Text = text;
-                Size = size;
-                Part = part;
-            }
+		return nodes;
+	}
 
-            public Node(Size size, Part part)
-            {
-                Text = null;
-                Size = size;
-                Part = part;
-            }
+	private class Node {
+		public string? Text;
+		public Size Size;
+		public Part? Part;
 
-            public Node()
-            {
-                Text = null;
-                Size = Size.Zero;
-                Part = null;
-            }
+		public Node(string? text, Size size, Part? part) {
+			Text = text;
+			Size = size;
+			Part = part;
+		}
 
-            public bool IsSpace { get { return Text == null && Part != null; } }
+		public Node(Size size, Part? part) {
+			Text = null;
+			Size = size;
+			Part = part;
+		}
 
-            public bool IsLineBreak { get { return Part == null; } }
+		public Node() {
+			Text = null;
+			Size = Size.Zero;
+			Part = null;
+		}
+
+		public bool IsSpace { get { return Text == null && Part != null; } }
+
+		public bool IsLineBreak { get { return Part == null; } }
 
 #if DEBUG
-            public override string ToString()
-            {
-                if (Part == null)
-                    return String.Format("Node: LineBreak");
-                else if (Text == null)
-                    return String.Format("Node: Width = {0} Value = Space", Size.Width);
-                else
-                    return String.Format("Node: Width = {0} Value = \"{1}\"", Size.Width, Text);
-            }
+		public override string ToString() {
+			if(Part == null)
+				return String.Format("Node: LineBreak");
+			else if(Text == null)
+				return String.Format("Node: Width = {0} Value = Space", Size.Width);
+			else
+				return String.Format("Node: Width = {0} Value = \"{1}\"", Size.Width, Text);
+		}
 #endif
-        }
-    }
+	}
 }

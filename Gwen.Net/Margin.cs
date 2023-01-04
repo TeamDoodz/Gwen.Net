@@ -65,7 +65,7 @@ public struct Margin : IEquatable<Margin> {
 		return new Margin(lhs.Left - rhs.Left, lhs.Top - rhs.Top, lhs.Right - rhs.Right, lhs.Bottom - rhs.Bottom);
 	}
 
-	public override bool Equals(object obj) {
+	public override bool Equals(object? obj) {
 		return obj is Margin margin && Equals(margin);
 	}
 

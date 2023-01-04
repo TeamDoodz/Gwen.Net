@@ -1,20 +1,16 @@
 ﻿using System;
 
-namespace Gwen.Net.RichText
-{
-    public class FontPart : Part
-    {
-        private Font m_Font;
+namespace Gwen.Net.RichText;
 
-        public FontPart(Font font = null)
-        {
-            m_Font = font;
-        }
+public class FontPart : Part {
+	private Font? font;
 
-        public override string[] Split(ref Font font)
-        {
-            font = m_Font;
-            return new string[0];
-        }
-    }
+	public FontPart(Font? font = null) {
+		this.font = font;
+	}
+
+	public override string[] Split(ref Font? font) {
+		font = this.font;
+		return Array.Empty<string>();
+	}
 }

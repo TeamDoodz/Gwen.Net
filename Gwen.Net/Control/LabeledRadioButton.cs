@@ -1,119 +1,105 @@
 ﻿using System;
 using Gwen.Net.Input;
 
-namespace Gwen.Net.Control
-{
-    /// <summary>
-    /// RadioButton with label.
-    /// </summary>
-    [Xml.XmlControl]
-    public class LabeledRadioButton : ControlBase
-    {
-        private readonly RadioButton m_RadioButton;
-        private readonly Label m_Label;
+namespace Gwen.Net.Control;
 
-        /// <summary>
-        /// Label text.
-        /// </summary>
-        [Xml.XmlProperty]
-        public string Text { get { return m_Label.Text; } set { m_Label.Text = value; } }
+/// <summary>
+/// RadioButton with label.
+/// </summary>
+[Xml.XmlControl]
+public class LabeledRadioButton : ControlBase {
+	private readonly RadioButton radioButton;
+	private readonly Label label;
 
-        /// <summary>
-        /// Invoked when the radiobutton has been checked.
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> Checked
-        {
-            add
-            {
-                m_RadioButton.Checked += value;
-            }
-            remove
-            {
-                m_RadioButton.Checked -= value;
-            }
-        }
+	/// <summary>
+	/// Label text.
+	/// </summary>
+	[Xml.XmlProperty]
+	public string Text { get { return label.Text; } set { label.Text = value; } }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LabeledRadioButton"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public LabeledRadioButton(ControlBase parent)
-            : base(parent)
-        {
-            MouseInputEnabled = true;
+	/// <summary>
+	/// Invoked when the radiobutton has been checked.
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<EventArgs> Checked {
+		add {
+			radioButton.Checked += value;
+		}
+		remove {
+			radioButton.Checked -= value;
+		}
+	}
 
-            m_RadioButton = new RadioButton(this);
-            m_RadioButton.IsTabable = false;
-            m_RadioButton.KeyboardInputEnabled = false;
+	/// <summary>
+	/// Initializes a new instance of the <see cref="LabeledRadioButton"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	public LabeledRadioButton(ControlBase? parent)
+		: base(parent) {
+		MouseInputEnabled = true;
 
-            m_Label = new Label(this);
-            m_Label.Alignment = Alignment.CenterV | Alignment.Left;
-            m_Label.Text = "Radio Button";
-            m_Label.Clicked += delegate (ControlBase control, ClickedEventArgs args) { m_RadioButton.Press(control); };
-            m_Label.IsTabable = false;
-            m_Label.KeyboardInputEnabled = false;
-        }
+		radioButton = new RadioButton(this);
+		radioButton.IsTabable = false;
+		radioButton.KeyboardInputEnabled = false;
 
-        protected override Size Measure(Size availableSize)
-        {
-            Size labelSize = m_Label.DoMeasure(availableSize);
-            Size radioButtonSize = m_RadioButton.DoMeasure(availableSize);
+		label = new Label(this);
+		label.Alignment = Alignment.CenterV | Alignment.Left;
+		label.Text = "Radio Button";
+		label.Clicked += delegate (ControlBase control, ClickedEventArgs args) { radioButton.Press(control); };
+		label.IsTabable = false;
+		label.KeyboardInputEnabled = false;
+	}
 
-            return new Size(labelSize.Width + 4 + radioButtonSize.Width, Math.Max(labelSize.Height, radioButtonSize.Height));
-        }
+	protected override Size Measure(Size availableSize) {
+		Size labelSize = label.DoMeasure(availableSize);
+		Size radioButtonSize = radioButton.DoMeasure(availableSize);
 
-        protected override Size Arrange(Size finalSize)
-        {
-            if (m_RadioButton.MeasuredSize.Height > m_Label.MeasuredSize.Height)
-            {
-                m_RadioButton.DoArrange(new Rectangle(0, 0, m_RadioButton.MeasuredSize.Width, m_RadioButton.MeasuredSize.Height));
-                m_Label.DoArrange(new Rectangle(m_RadioButton.MeasuredSize.Width + 4, (m_RadioButton.MeasuredSize.Height - m_Label.MeasuredSize.Height) / 2, m_Label.MeasuredSize.Width, m_Label.MeasuredSize.Height));
-            }
-            else
-            {
-                m_RadioButton.DoArrange(new Rectangle(0, (m_Label.MeasuredSize.Height - m_RadioButton.MeasuredSize.Height) / 2, m_RadioButton.MeasuredSize.Width, m_RadioButton.MeasuredSize.Height));
-                m_Label.DoArrange(new Rectangle(m_RadioButton.MeasuredSize.Width + 4, 0, m_Label.MeasuredSize.Width, m_Label.MeasuredSize.Height));
-            }
+		return new Size(labelSize.Width + 4 + radioButtonSize.Width, Math.Max(labelSize.Height, radioButtonSize.Height));
+	}
 
-            return finalSize;
-        }
+	protected override Size Arrange(Size finalSize) {
+		if(radioButton.MeasuredSize.Height > label.MeasuredSize.Height) {
+			radioButton.DoArrange(new Rectangle(0, 0, radioButton.MeasuredSize.Width, radioButton.MeasuredSize.Height));
+			label.DoArrange(new Rectangle(radioButton.MeasuredSize.Width + 4, (radioButton.MeasuredSize.Height - label.MeasuredSize.Height) / 2, label.MeasuredSize.Width, label.MeasuredSize.Height));
+		} else {
+			radioButton.DoArrange(new Rectangle(0, (label.MeasuredSize.Height - radioButton.MeasuredSize.Height) / 2, radioButton.MeasuredSize.Width, radioButton.MeasuredSize.Height));
+			label.DoArrange(new Rectangle(radioButton.MeasuredSize.Width + 4, 0, label.MeasuredSize.Width, label.MeasuredSize.Height));
+		}
 
-        /// <summary>
-        /// Renders the focus overlay.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void RenderFocus(Skin.SkinBase skin)
-        {
-            if (InputHandler.KeyboardFocus != this) return;
-            if (!IsTabable) return;
+		return finalSize;
+	}
 
-            skin.DrawKeyboardHighlight(this, RenderBounds, 0);
-        }
+	/// <summary>
+	/// Renders the focus overlay.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void RenderFocus(Skin.SkinBase skin) {
+		if(InputHandler.KeyboardFocus != this) return;
+		if(!IsTabable) return;
 
-        // todo: would be nice to remove that
-        internal RadioButton RadioButton { get { return m_RadioButton; } }
+		skin.DrawKeyboardHighlight(this, RenderBounds, 0);
+	}
 
-        /// <summary>
-        /// Handler for Space keyboard event.
-        /// </summary>
-        /// <param name="down">Indicates whether the key was pressed or released.</param>
-        /// <returns>
-        /// True if handled.
-        /// </returns>
-        protected override bool OnKeySpace(bool down)
-        {
-            if (down)
-                m_RadioButton.IsChecked = !m_RadioButton.IsChecked;
-            return true;
-        }
+	// todo: would be nice to remove that
+	internal RadioButton RadioButton { get { return radioButton; } }
 
-        /// <summary>
-        /// Selects the radio button.
-        /// </summary>
-        public virtual void Select()
-        {
-            m_RadioButton.IsChecked = true;
-        }
-    }
+	/// <summary>
+	/// Handler for Space keyboard event.
+	/// </summary>
+	/// <param name="down">Indicates whether the key was pressed or released.</param>
+	/// <returns>
+	/// True if handled.
+	/// </returns>
+	protected override bool OnKeySpace(bool down) {
+		if(down)
+			radioButton.IsChecked = !radioButton.IsChecked;
+		return true;
+	}
+
+	/// <summary>
+	/// Selects the radio button.
+	/// </summary>
+	public virtual void Select() {
+		radioButton.IsChecked = true;
+	}
 }

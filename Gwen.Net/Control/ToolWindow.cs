@@ -1,125 +1,109 @@
-﻿using System;
-using System.Linq;
-using Gwen.Net.Control.Internal;
+﻿using Gwen.Net.Control.Internal;
 
-namespace Gwen.Net.Control
-{
-    [Xml.XmlControl]
-    public class ToolWindow : WindowBase
-    {
-        private bool m_vertical;
+namespace Gwen.Net.Control;
+[Xml.XmlControl]
+public class ToolWindow : WindowBase {
+	private bool vertical;
 
-        [Xml.XmlProperty]
-        public bool Vertical
-        {
-            get
-            {
-                return m_vertical;
-            }
-            set
-            {
-                m_vertical = value;
-                if (m_vertical)
-                {
-                    m_DragBar.Height = BaseUnit + 2;
-                    m_DragBar.Width = Util.Ignore;
-                }
-                else
-                {
-                    m_DragBar.Width = BaseUnit + 2;
-                    m_DragBar.Height = Util.Ignore;
-                }
-                EnableResizing();
-                Invalidate();
-            }
-        }
+	[Xml.XmlProperty]
+	public bool Vertical {
+		get {
+			return vertical;
+		}
+		set {
+			vertical = value;
+			if(dragBar != null) {
+				if(vertical) {
+					dragBar.Height = BaseUnit + 2;
+					dragBar.Width = Util.Ignore;
+				} else {
+					dragBar.Width = BaseUnit + 2;
+					dragBar.Height = Util.Ignore;
+				}
+			}
+			EnableResizing();
+			Invalidate();
+		}
+	}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ToolWindow"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public ToolWindow(ControlBase parent)
-            : base(parent)
-        {
-            m_DragBar = new Dragger(this);
-            m_DragBar.Target = this;
-            m_DragBar.SendToBack();
+	/// <summary>
+	/// Initializes a new instance of the <see cref="ToolWindow"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	public ToolWindow(ControlBase? parent)
+		: base(parent) {
+		dragBar = new Dragger(this);
+		dragBar.Target = this;
+		dragBar.SendToBack();
 
-            Vertical = false;
+		Vertical = false;
 
-            m_InnerPanel = new InnerContentControl(this);
-            m_InnerPanel.SendToBack();
-        }
+		innerPanel = new InnerContentControl(this);
+		innerPanel.SendToBack();
+	}
 
-        /// <summary>
-        /// Renders the control using specified skin.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void Render(Skin.SkinBase skin)
-        {
-            bool hasFocus = IsOnTop;
+	/// <summary>
+	/// Renders the control using specified skin.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void Render(Skin.SkinBase skin) {
+		if(dragBar == null) {
+			return;
+		}
 
-            skin.DrawToolWindow(this, m_vertical, m_vertical ? m_DragBar.ActualHeight : m_DragBar.ActualWidth);
-        }
+		skin.DrawToolWindow(this, vertical, vertical ? dragBar.ActualHeight : dragBar.ActualWidth);
+	}
 
-        /// <summary>
-        /// Renders under the actual control (shadows etc).
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void RenderUnder(Skin.SkinBase skin)
-        {
-            base.RenderUnder(skin);
-            skin.DrawShadow(this);
-        }
+	/// <summary>
+	/// Renders under the actual control (shadows etc).
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void RenderUnder(Skin.SkinBase skin) {
+		base.RenderUnder(skin);
+		skin.DrawShadow(this);
+	}
 
-        /// <summary>
-        /// Renders the focus overlay.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void RenderFocus(Skin.SkinBase skin)
-        {
+	/// <summary>
+	/// Renders the focus overlay.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void RenderFocus(Skin.SkinBase skin) {
 
-        }
+	}
 
-        protected override Size Measure(Size availableSize)
-        {
-            Size titleBarSize = m_DragBar.DoMeasure(new Size(availableSize.Width, availableSize.Height));
+	protected override Size Measure(Size availableSize) {
+		Size titleBarSize = dragBar?.DoMeasure(new Size(availableSize.Width, availableSize.Height)) ?? Size.One;
 
-            if (m_InnerPanel != null)
-            {
-                if (m_vertical)
-                    m_InnerPanel.DoMeasure(new Size(availableSize.Width, availableSize.Height - titleBarSize.Height));
-                else
-                    m_InnerPanel.DoMeasure(new Size(availableSize.Width - titleBarSize.Width, availableSize.Height));
-            }
+		if(innerPanel != null) {
+			if(vertical)
+				innerPanel.DoMeasure(new Size(availableSize.Width, availableSize.Height - titleBarSize.Height));
+			else
+				innerPanel.DoMeasure(new Size(availableSize.Width - titleBarSize.Width, availableSize.Height));
+		}
 
-            if (m_vertical)
-                return base.Measure(new Size(m_InnerPanel.MeasuredSize.Width, m_InnerPanel.MeasuredSize.Height + titleBarSize.Height));
-            else
-                return base.Measure(new Size(m_InnerPanel.MeasuredSize.Width + titleBarSize.Width, m_InnerPanel.MeasuredSize.Height));
-        }
+		if(vertical)
+			return base.Measure(new Size(innerPanel?.MeasuredSize.Width ?? 1, innerPanel?.MeasuredSize.Height ?? 1 + titleBarSize.Height));
+		else
+			return base.Measure(new Size(innerPanel?.MeasuredSize.Width ?? 1 + titleBarSize.Width, innerPanel?.MeasuredSize.Height ?? 1));
+	}
 
-        protected override Size Arrange(Size finalSize)
-        {
-            if (m_vertical)
-                m_DragBar.DoArrange(new Rectangle(0, 0, finalSize.Width, m_DragBar.MeasuredSize.Height));
-            else
-                m_DragBar.DoArrange(new Rectangle(0, 0, m_DragBar.MeasuredSize.Width, finalSize.Height));
+	protected override Size Arrange(Size finalSize) {
+		if(vertical)
+			dragBar?.DoArrange(new Rectangle(0, 0, finalSize.Width, dragBar.MeasuredSize.Height));
+		else
+			dragBar?.DoArrange(new Rectangle(0, 0, dragBar.MeasuredSize.Width, finalSize.Height));
 
-            if (m_InnerPanel != null)
-            {
-                if (m_vertical)
-                    m_InnerPanel.DoArrange(new Rectangle(0, m_DragBar.MeasuredSize.Height, finalSize.Width, finalSize.Height - m_DragBar.MeasuredSize.Height));
-                else
-                    m_InnerPanel.DoArrange(new Rectangle(m_DragBar.MeasuredSize.Width, 0, finalSize.Width - m_DragBar.MeasuredSize.Width, finalSize.Height));
-            }
+		if(innerPanel != null) {
+			if(vertical)
+				innerPanel.DoArrange(new Rectangle(0, dragBar?.MeasuredSize.Height ?? 1, finalSize.Width, finalSize.Height - dragBar?.MeasuredSize.Height ?? 1));
+			else
+				innerPanel.DoArrange(new Rectangle(dragBar?.MeasuredSize.Width ?? 1, 0, finalSize.Width - dragBar?.MeasuredSize.Width ?? 1, finalSize.Height));
+		}
 
-            return base.Arrange(finalSize);
-        }
+		return base.Arrange(finalSize);
+	}
 
-        public override void EnableResizing(bool left = true, bool top = true, bool right = true, bool bottom = true)
-        {
-            base.EnableResizing(!m_vertical ? false : left, m_vertical ? false : top, right, bottom);
-        }
-    }
+	public override void EnableResizing(bool left = true, bool top = true, bool right = true, bool bottom = true) {
+		base.EnableResizing(vertical && left, !vertical && top, right, bottom);
+	}
 }

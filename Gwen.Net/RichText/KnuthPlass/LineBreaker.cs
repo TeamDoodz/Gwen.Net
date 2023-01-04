@@ -2,438 +2,379 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Gwen.Net.RichText.KnuthPlass
-{
-    // Knuth and Plass line breaking algorithm
-    //
-    // Original JavaScript implementation by Bram Stein
-    // from https://github.com/bramstein/typeset
-    // licensed under the new BSD License.
-    internal class LineBreaker : RichText.LineBreaker
-    {
-        public const int Infinity = 10000;
+namespace Gwen.Net.RichText.KnuthPlass;
+// Knuth and Plass line breaking algorithm
+//
+// Original JavaScript implementation by Bram Stein
+// from https://github.com/bramstein/typeset
+// licensed under the new BSD License.
+internal class LineBreaker : RichText.LineBreaker {
+	public const int Infinity = 10000;
 
-        public const int DemeritsLine = 10;
-        public const int DemeritsFlagged = 100;
-        public const int DemeritsFitness = 3000;
+	public const int DemeritsLine = 10;
+	public const int DemeritsFlagged = 100;
+	public const int DemeritsFitness = 3000;
 
-        private Paragraph m_Paragraph;
-        private int m_TotalWidth;
-        private int m_Tolerance;
+	private Paragraph? paragraph;
+	private int totalWidth;
+	private int tolerance;
 
-        private List<Node> m_Nodes;
+	private List<Node> nodes = new();
 
-        private Sum m_Sum = new Sum(0, 0, 0);
+	private Sum sum = new Sum(0, 0, 0);
 
-        private LinkedList<BreakPoint> m_ActiveNodes = new LinkedList<BreakPoint>();
+	private LinkedList<BreakPoint> activeNodes = new LinkedList<BreakPoint>();
 
-        private Formatter m_Formatter;
+	private Formatter formatter;
 
-        public LineBreaker(Renderer.RendererBase renderer, Font defaultFont)
-            : base(renderer, defaultFont)
-        {
-            m_Formatter = new LeftFormatter(renderer, defaultFont);
-        }
+	public LineBreaker(Renderer.RendererBase renderer, Font defaultFont)
+		: base(renderer, defaultFont) {
+		formatter = new LeftFormatter(renderer, defaultFont);
+	}
 
-        public override List<TextBlock> LineBreak(Paragraph paragraph, int width)
-        {
-            List<TextBlock> textBlocks = null;
+	public override List<TextBlock> LineBreak(Paragraph paragraph, int width) {
+		List<TextBlock>? textBlocks = null;
 
-            // Todo: Find out why tolerance needs to be quite high sometimes, depending on the line width.
-            // Maybe words need to be hyphenated or there is still a bug somewhere in the code.
-            for (int tolerance = 4; tolerance < 30; tolerance += 2)
-            {
-                textBlocks = DoLineBreak(paragraph, m_Formatter, width, tolerance);
-                if (textBlocks != null)
-                {
-                    break;
-                }
-            }
+		// Todo: Find out why tolerance needs to be quite high sometimes, depending on the line width.
+		// Maybe words need to be hyphenated or there is still a bug somewhere in the code.
+		for(int tolerance = 4; tolerance < 30; tolerance += 2) {
+			textBlocks = DoLineBreak(paragraph, formatter, width, tolerance);
+			if(textBlocks != null) {
+				break;
+			}
+		}
 
-            return textBlocks;
-        }
+		return textBlocks ?? throw new Exception("i dont even know anymore");
+	}
 
-        private int GetLineLength(int currentLine)
-        {
-            return m_TotalWidth - m_Paragraph.Margin.Left - m_Paragraph.Margin.Right - (currentLine == 1 ? m_Paragraph.FirstIndent : m_Paragraph.RemainigIndent);
-        }
+	private int GetLineLength(int currentLine) {
+		if(paragraph == null) {
+			return 0;
+		}
+		return totalWidth - paragraph.Margin.Left - paragraph.Margin.Right - (currentLine == 1 ? paragraph.FirstIndent : paragraph.RemainigIndent);
+	}
 
-        private float ComputeCost(int start, int end, Sum activeTotals, int currentLine)
-        {
-            int width = m_Sum.Width - activeTotals.Width;
-            int stretch = 0;
-            int shrink = 0;
+	private float ComputeCost(int start, int end, Sum activeTotals, int currentLine) {
+		int width = sum.Width - activeTotals.Width;
+		int stretch = 0;
+		int shrink = 0;
 
-            int lineLength = GetLineLength(currentLine);
+		int lineLength = GetLineLength(currentLine);
 
-            if (m_Nodes[end].Type == NodeType.Penalty)
-            {
-                width += m_Nodes[end].Width;
-            }
+		if(nodes[end].Type == NodeType.Penalty) {
+			width += nodes[end].Width;
+		}
 
-            if (width < lineLength)
-            {
-                stretch = m_Sum.Stretch - activeTotals.Stretch;
+		if(width < lineLength) {
+			stretch = sum.Stretch - activeTotals.Stretch;
 
-                if (stretch > 0)
-                {
-                    return (float)(lineLength - width) / stretch;
-                }
-                else
-                {
-                    return Infinity;
-                }
-            }
-            else if (width > lineLength)
-            {
-                shrink = m_Sum.Shrink - activeTotals.Shrink;
+			if(stretch > 0) {
+				return (float)(lineLength - width) / stretch;
+			} else {
+				return Infinity;
+			}
+		} else if(width > lineLength) {
+			shrink = sum.Shrink - activeTotals.Shrink;
 
-                if (shrink > 0)
-                {
-                    return (float)(lineLength - width) / shrink;
-                }
-                else
-                {
-                    return Infinity;
-                }
-            }
-            else
-            {
-                return 0.0f;
-            }
-        }
+			if(shrink > 0) {
+				return (float)(lineLength - width) / shrink;
+			} else {
+				return Infinity;
+			}
+		} else {
+			return 0.0f;
+		}
+	}
 
-        private Sum ComputeSum(int breakPointIndex)
-        {
-            Sum result = new Sum(m_Sum.Width, m_Sum.Stretch, m_Sum.Shrink);
+	private Sum ComputeSum(int breakPointIndex) {
+		Sum result = new Sum(sum.Width, sum.Stretch, sum.Shrink);
 
-            for (int i = breakPointIndex; i < m_Nodes.Count; i++)
-            {
-                if (m_Nodes[i].Type == NodeType.Glue)
-                {
-                    result.Width += m_Nodes[i].Width;
-                    result.Stretch += ((GlueNode)m_Nodes[i]).Stretch;
-                    result.Shrink += ((GlueNode)m_Nodes[i]).Shrink;
-                }
-                else if (m_Nodes[i].Type == NodeType.Box || (m_Nodes[i].Type == NodeType.Penalty && ((PenaltyNode)m_Nodes[i]).Penalty == -Infinity && i > breakPointIndex))
-                {
-                    break;
-                }
-            }
+		for(int i = breakPointIndex; i < nodes.Count; i++) {
+			if(nodes[i].Type == NodeType.Glue) {
+				result.Width += nodes[i].Width;
+				result.Stretch += ((GlueNode)nodes[i]).Stretch;
+				result.Shrink += ((GlueNode)nodes[i]).Shrink;
+			} else if(nodes[i].Type == NodeType.Box || (nodes[i].Type == NodeType.Penalty && ((PenaltyNode)nodes[i]).Penalty == -Infinity && i > breakPointIndex)) {
+				break;
+			}
+		}
 
-            return result;
-        }
+		return result;
+	}
 
-        private void MainLoop(int index)
-        {
-            Node node = m_Nodes[index];
+	private void MainLoop(int index) {
+		Node node = nodes[index];
 
-            LinkedListNode<BreakPoint> active = m_ActiveNodes.First;
-            LinkedListNode<BreakPoint> next = null;
-            float ratio = 0.0f;
-            int demerits = 0;
-            Candidate[] candidates = new Candidate[4];
-            int badness;
-            int currentLine = 0;
-            Sum tmpSum;
-            int currentClass = 0;
-            int fitnessClass;
-            Candidate candidate;
-            LinkedListNode<BreakPoint> newNode;
+		LinkedListNode<BreakPoint>? active = activeNodes.First;
+		LinkedListNode<BreakPoint>? next = null;
+		float ratio = 0.0f;
+		int demerits = 0;
+		Candidate[] candidates = new Candidate[4];
+		int badness;
+		int currentLine = 0;
+		Sum tmpSum;
+		int currentClass = 0;
+		int fitnessClass;
+		Candidate candidate;
+		LinkedListNode<BreakPoint> newNode;
 
-            while (active != null)
-            {
-                candidates[0].Demerits = Infinity;
-                candidates[1].Demerits = Infinity;
-                candidates[2].Demerits = Infinity;
-                candidates[3].Demerits = Infinity;
+		while(active != null) {
+			candidates[0].Demerits = Infinity;
+			candidates[1].Demerits = Infinity;
+			candidates[2].Demerits = Infinity;
+			candidates[3].Demerits = Infinity;
 
-                while (active != null)
-                {
-                    next = active.Next;
-                    currentLine = active.Value.Line + 1;
-                    ratio = ComputeCost(active.Value.Position, index, active.Value.Totals, currentLine);
+			while(active != null) {
+				next = active.Next;
+				currentLine = active.Value.Line + 1;
+				ratio = ComputeCost(active.Value.Position, index, active.Value.Totals, currentLine);
 
-                    if (ratio < -1 || (node.Type == NodeType.Penalty && ((PenaltyNode)node).Penalty == -Infinity))
-                    {
-                        m_ActiveNodes.Remove(active);
-                    }
+				if(ratio < -1 || (node.Type == NodeType.Penalty && ((PenaltyNode)node).Penalty == -Infinity)) {
+					activeNodes.Remove(active);
+				}
 
-                    if (-1 <= ratio && ratio <= m_Tolerance)
-                    {
-                        badness = (int)(100.0f * Math.Pow(Math.Abs(ratio), 3));
+				if(-1 <= ratio && ratio <= tolerance) {
+					badness = (int)(100.0f * Math.Pow(Math.Abs(ratio), 3));
 
-                        if (node.Type == NodeType.Penalty && ((PenaltyNode)node).Penalty >= 0)
-                            demerits = (DemeritsLine + badness) * (DemeritsLine + badness) + ((PenaltyNode)node).Penalty * ((PenaltyNode)node).Penalty;
-                        else if (node.Type == NodeType.Penalty && ((PenaltyNode)node).Penalty != -Infinity)
-                            demerits = (DemeritsLine + badness) * (DemeritsLine + badness) - ((PenaltyNode)node).Penalty * ((PenaltyNode)node).Penalty;
-                        else
-                            demerits = (DemeritsLine + badness) * (DemeritsLine + badness);
+					if(node.Type == NodeType.Penalty && ((PenaltyNode)node).Penalty >= 0)
+						demerits = (DemeritsLine + badness) * (DemeritsLine + badness) + ((PenaltyNode)node).Penalty * ((PenaltyNode)node).Penalty;
+					else if(node.Type == NodeType.Penalty && ((PenaltyNode)node).Penalty != -Infinity)
+						demerits = (DemeritsLine + badness) * (DemeritsLine + badness) - ((PenaltyNode)node).Penalty * ((PenaltyNode)node).Penalty;
+					else
+						demerits = (DemeritsLine + badness) * (DemeritsLine + badness);
 
-                        if (node.Type == NodeType.Penalty && m_Nodes[active.Value.Position].Type == NodeType.Penalty)
-                            demerits += DemeritsFlagged * ((PenaltyNode)node).Flagged * ((PenaltyNode)m_Nodes[active.Value.Position]).Flagged;
+					if(node.Type == NodeType.Penalty && nodes[active.Value.Position].Type == NodeType.Penalty)
+						demerits += DemeritsFlagged * ((PenaltyNode)node).Flagged * ((PenaltyNode)nodes[active.Value.Position]).Flagged;
 
-                        if (ratio < -0.5f)
-                            currentClass = 0;
-                        else if (ratio <= 0.5f)
-                            currentClass = 1;
-                        else if (ratio <= 1.0f)
-                            currentClass = 2;
-                        else
-                            currentClass = 3;
+					if(ratio < -0.5f)
+						currentClass = 0;
+					else if(ratio <= 0.5f)
+						currentClass = 1;
+					else if(ratio <= 1.0f)
+						currentClass = 2;
+					else
+						currentClass = 3;
 
-                        if (Math.Abs(currentClass - active.Value.FitnessClass) > 1)
-                            demerits += DemeritsFitness;
+					if(Math.Abs(currentClass - active.Value.FitnessClass) > 1)
+						demerits += DemeritsFitness;
 
-                        demerits += active.Value.Demerits;
+					demerits += active.Value.Demerits;
 
-                        if (demerits < candidates[currentClass].Demerits)
-                        {
-                            candidates[currentClass].Active = active;
-                            candidates[currentClass].Demerits = demerits;
-                            candidates[currentClass].Ratio = ratio;
-                        }
-                    }
+					if(demerits < candidates[currentClass].Demerits) {
+						candidates[currentClass].Active = active;
+						candidates[currentClass].Demerits = demerits;
+						candidates[currentClass].Ratio = ratio;
+					}
+				}
 
-                    active = next;
+				active = next;
 
-                    if (active != null && active.Value.Line >= currentLine)
-                        break;
-                }
+				if(active != null && active.Value.Line >= currentLine)
+					break;
+			}
 
-                tmpSum = ComputeSum(index);
+			tmpSum = ComputeSum(index);
 
-                for (fitnessClass = 0; fitnessClass < candidates.Length; fitnessClass++)
-                {
-                    candidate = candidates[fitnessClass];
+			for(fitnessClass = 0; fitnessClass < candidates.Length; fitnessClass++) {
+				candidate = candidates[fitnessClass];
 
-                    if (candidate.Demerits < Infinity)
-                    {
-                        newNode = new LinkedListNode<BreakPoint>(new BreakPoint(index, candidate.Demerits, candidate.Ratio, candidate.Active.Value.Line + 1, fitnessClass, tmpSum, candidate.Active));
-                        if (active != null)
-                            m_ActiveNodes.AddBefore(active, newNode);
-                        else
-                            m_ActiveNodes.AddLast(newNode);
-                    }
-                }
-            }
-        }
+				if(candidate.Demerits < Infinity) {
+					newNode = new LinkedListNode<BreakPoint>(new BreakPoint(index, candidate.Demerits, candidate.Ratio, candidate.Active.Value.Line + 1, fitnessClass, tmpSum, candidate.Active));
+					if(active != null)
+						activeNodes.AddBefore(active, newNode);
+					else
+						activeNodes.AddLast(newNode);
+				}
+			}
+		}
+	}
 
-        private List<TextBlock> DoLineBreak(Paragraph paragraph, Formatter formatter, int width, int tolerance)
-        {
-            m_Paragraph = paragraph;
-            m_TotalWidth = width;
-            m_Tolerance = tolerance;
+	private List<TextBlock> DoLineBreak(Paragraph paragraph, Formatter formatter, int width, int tolerance) {
+		this.paragraph = paragraph;
+		totalWidth = width;
+		this.tolerance = tolerance;
 
-            m_Nodes = formatter.FormatParagraph(paragraph);
+		nodes = formatter.FormatParagraph(paragraph);
 
-            m_Sum = new Sum(0, 0, 0);
+		sum = new Sum(0, 0, 0);
 
-            m_ActiveNodes.Clear();
-            m_ActiveNodes.AddLast(new BreakPoint(0, 0, 0, 0, 0, new Sum(0, 0, 0), null));
+		activeNodes.Clear();
+		activeNodes.AddLast(new BreakPoint(0, 0, 0, 0, 0, new Sum(0, 0, 0), null));
 
-            for (int index = 0; index < m_Nodes.Count; index++)
-            {
-                Node node = m_Nodes[index];
+		for(int index = 0; index < nodes.Count; index++) {
+			Node node = nodes[index];
 
-                if (node.Type == NodeType.Box)
-                {
-                    m_Sum.Width += node.Width;
-                }
-                else if (node.Type == NodeType.Glue)
-                {
-                    if (index > 0 && m_Nodes[index - 1].Type == NodeType.Box)
-                    {
-                        MainLoop(index);
-                    }
-                    m_Sum.Width += node.Width;
-                    m_Sum.Stretch += ((GlueNode)node).Stretch;
-                    m_Sum.Shrink += ((GlueNode)node).Shrink;
-                }
-                else if (node.Type == NodeType.Penalty && ((PenaltyNode)node).Penalty != Infinity)
-                {
-                    MainLoop(index);
-                }
-            }
+			if(node.Type == NodeType.Box) {
+				sum.Width += node.Width;
+			} else if(node.Type == NodeType.Glue) {
+				if(index > 0 && nodes[index - 1].Type == NodeType.Box) {
+					MainLoop(index);
+				}
+				sum.Width += node.Width;
+				sum.Stretch += ((GlueNode)node).Stretch;
+				sum.Shrink += ((GlueNode)node).Shrink;
+			} else if(node.Type == NodeType.Penalty && ((PenaltyNode)node).Penalty != Infinity) {
+				MainLoop(index);
+			}
+		}
 
-            if (m_ActiveNodes.Count != 0)
-            {
-                LinkedListNode<BreakPoint> node = m_ActiveNodes.First;
-                LinkedListNode<BreakPoint> tmp = null;
-                while (node != null)
-                {
-                    if (tmp == null || node.Value.Demerits < tmp.Value.Demerits)
-                    {
-                        tmp = node;
-                    }
+		if(activeNodes.Count != 0) {
+			LinkedListNode<BreakPoint>? node = activeNodes.First;
+			LinkedListNode<BreakPoint>? tmp = null;
+			while(node != null) {
+				if(tmp == null || node.Value.Demerits < tmp.Value.Demerits) {
+					tmp = node;
+				}
 
-                    node = node.Next;
-                }
+				node = node.Next;
+			}
 
-                List<Break> breaks = new List<Break>();
+			List<Break> breaks = new List<Break>();
 
-                while (tmp != null)
-                {
-                    breaks.Add(new Break(tmp.Value.Position, tmp.Value.Ratio));
-                    tmp = tmp.Value.Previous;
-                }
+			while(tmp != null) {
+				breaks.Add(new Break(tmp.Value.Position, tmp.Value.Ratio));
+				tmp = tmp.Value.Previous;
+			}
 
-                // breaks.Reverse();
+			// breaks.Reverse();
 
-                int lineStart = 0;
-                int y = 0;
-                int x = 0;
-                StringBuilder str = new StringBuilder(1000);
-                List<TextBlock> textBlocks = new List<TextBlock>();
+			int lineStart = 0;
+			int y = 0;
+			int x = 0;
+			StringBuilder str = new StringBuilder(1000);
+			List<TextBlock> textBlocks = new List<TextBlock>();
 
-                for (int i = breaks.Count - 2; i >= 0; i--)
-                {
-                    int position = breaks[i].Position;
-                    float r = breaks[i].Ratio;
+			for(int i = breaks.Count - 2; i >= 0; i--) {
+				int position = breaks[i].Position;
+				float r = breaks[i].Ratio;
 
-                    for (int j = lineStart; j < m_Nodes.Count; j++)
-                    {
-                        if (m_Nodes[j].Type == NodeType.Box || (m_Nodes[j].Type == NodeType.Penalty && ((PenaltyNode)m_Nodes[j]).Penalty == -Infinity))
-                        {
-                            lineStart = j;
-                            break;
-                        }
-                    }
+				for(int j = lineStart; j < nodes.Count; j++) {
+					if(nodes[j].Type == NodeType.Box || (nodes[j].Type == NodeType.Penalty && ((PenaltyNode)nodes[j]).Penalty == -Infinity)) {
+						lineStart = j;
+						break;
+					}
+				}
 
-                    int height = 0;
-                    int baseline = 0;
-                    for (int nodeIndex = lineStart; nodeIndex <= position; nodeIndex++)
-                    {
-                        if (m_Nodes[nodeIndex].Type == NodeType.Box)
-                        {
-                            height = Math.Max(height, ((BoxNode)m_Nodes[nodeIndex]).Height);
-                            baseline = Math.Max(baseline, (int)((TextPart)((BoxNode)m_Nodes[nodeIndex]).Part).Font.FontMetrics.Baseline);
-                        }
-                    }
+				int height = 0;
+				int baseline = 0;
+				for(int nodeIndex = lineStart; nodeIndex <= position; nodeIndex++) {
+					if(nodes[nodeIndex].Type == NodeType.Box) {
+						height = Math.Max(height, ((BoxNode)nodes[nodeIndex]).Height);
+						Font font = ((TextPart)((BoxNode)nodes[nodeIndex]).Part).Font ?? DefaultFont;
+						baseline = Math.Max(baseline, (int)font.FontMetrics.Baseline);
+					}
+				}
 
-                    Part part = ((BoxNode)m_Nodes[lineStart]).Part;
-                    int blockStart = lineStart;
-                    for (int nodeIndex = lineStart; nodeIndex <= position; nodeIndex++)
-                    {
-                        if ((m_Nodes[nodeIndex].Type == NodeType.Box && ((BoxNode)m_Nodes[nodeIndex]).Part != part) || nodeIndex == position)
-                        {
-                            TextBlock textBlock = new TextBlock();
-                            textBlock.Part = part;
-                            str.Clear();
+				Part part = ((BoxNode)nodes[lineStart]).Part;
+				int blockStart = lineStart;
+				for(int nodeIndex = lineStart; nodeIndex <= position; nodeIndex++) {
+					if((nodes[nodeIndex].Type == NodeType.Box && ((BoxNode)nodes[nodeIndex]).Part != part) || nodeIndex == position) {
+						TextBlock textBlock = new TextBlock();
+						textBlock.Part = part;
+						str.Clear();
 
-                            for (int k = blockStart; k < (nodeIndex - 1); k++)
-                            {
-                                if (m_Nodes[k].Type == NodeType.Glue)
-                                {
-                                    if (m_Nodes[k].Width > 0)
-                                        str.Append(' ');
-                                }
-                                else if (m_Nodes[k].Type == NodeType.Box)
-                                {
-                                    str.Append(((BoxNode)m_Nodes[k]).Value);
-                                }
-                            }
+						for(int k = blockStart; k < (nodeIndex - 1); k++) {
+							if(nodes[k].Type == NodeType.Glue) {
+								if(nodes[k].Width > 0)
+									str.Append(' ');
+							} else if(nodes[k].Type == NodeType.Box) {
+								str.Append(((BoxNode)nodes[k]).Value);
+							}
+						}
 
-                            textBlock.Position = new Point(x, y + baseline - (int)((TextPart)part).Font.FontMetrics.Baseline);
-                            textBlock.Text = str.ToString();
-                            textBlock.Size = new Size(formatter.MeasureText(((TextPart)part).Font, textBlock.Text).Width, height);
+						{
+							Font font = ((TextPart)part).Font ?? DefaultFont;
 
-                            x += textBlock.Size.Width;
+							textBlock.Position = new Point(x, y + baseline - (int)font.FontMetrics.Baseline);
+							textBlock.Text = str.ToString();
+							textBlock.Size = new Size(formatter.MeasureText(font, textBlock.Text).Width, height);
+						}
 
-                            textBlocks.Add(textBlock);
+						x += textBlock.Size.Width;
 
-                            if (m_Nodes[nodeIndex].Type == NodeType.Box)
-                                part = ((BoxNode)m_Nodes[nodeIndex]).Part;
-                            blockStart = nodeIndex;
-                        }
-                    }
+						textBlocks.Add(textBlock);
 
-                    x = 0;
-                    y += height;
+						if(nodes[nodeIndex].Type == NodeType.Box)
+							part = ((BoxNode)nodes[nodeIndex]).Part;
+						blockStart = nodeIndex;
+					}
+				}
 
-                    lineStart = position;
-                }
+				x = 0;
+				y += height;
 
-                return textBlocks;
-            }
+				lineStart = position;
+			}
 
-            return null;
-        }
+			return textBlocks;
+		}
 
-        private struct Candidate
-        {
-            public LinkedListNode<BreakPoint> Active;
-            public int Demerits;
-            public float Ratio;
+		return new List<TextBlock>();
+	}
+
+	private struct Candidate {
+		public LinkedListNode<BreakPoint> Active { get; set; }
+		public int Demerits { get; set; }
+		public float Ratio { get; set; }
 
 #if DEBUG
-            public override string ToString()
-            {
-                return String.Format("Candidate: Demerits = {0} Ratio = {1} Active = {2}", Demerits, Ratio, Active.Value.ToString());
-            }
+		public override string ToString() {
+			return String.Format("Candidate: Demerits = {0} Ratio = {1} Active = {2}", Demerits, Ratio, Active.Value.ToString());
+		}
 #endif
-        }
+	}
 
-        private struct Break
-        {
-            public int Position;
-            public float Ratio;
+	private struct Break {
+		public int Position { get; set; }
+		public float Ratio { get; set; }
 
-            public Break(int position, float ratio)
-            {
-                Position = position;
-                Ratio = ratio;
-            }
-        }
+		public Break(int position, float ratio) {
+			Position = position;
+			Ratio = ratio;
+		}
+	}
 
-        private struct Sum
-        {
-            public int Width;
-            public int Stretch;
-            public int Shrink;
+	private struct Sum {
+		public int Width { get; set; }
+		public int Stretch { get; set; }
+		public int Shrink { get; set; }
 
-            public Sum(int width, int stretch, int shrink)
-            {
-                Width = width;
-                Stretch = stretch;
-                Shrink = shrink;
-            }
+		public Sum(int width, int stretch, int shrink) {
+			Width = width;
+			Stretch = stretch;
+			Shrink = shrink;
+		}
 
 #if DEBUG
-            public override string ToString()
-            {
-                return String.Format("Sum: Width = {0} Stretch = {1} Shrink = {2}", Width, Stretch, Shrink);
-            }
+		public override string ToString() {
+			return String.Format("Sum: Width = {0} Stretch = {1} Shrink = {2}", Width, Stretch, Shrink);
+		}
 #endif
-        }
+	}
 
-        private struct BreakPoint
-        {
-            public int Position;
-            public int Demerits;
-            public float Ratio;
-            public int Line;
-            public int FitnessClass;
-            public Sum Totals;
-            public LinkedListNode<BreakPoint> Previous;
+	private struct BreakPoint {
+		public int Position { get; set; }
+		public int Demerits { get; set; }
+		public float Ratio { get; set; }
+		public int Line { get; set; }
+		public int FitnessClass { get; set; }
+		public Sum Totals { get; set; }
+		public LinkedListNode<BreakPoint>? Previous { get; set; }
 
-            public BreakPoint(int position, int demerits, float ratio, int line, int fitnessClass, Sum totals, LinkedListNode<BreakPoint> previous)
-            {
-                Position = position;
-                Demerits = demerits;
-                Ratio = ratio;
-                Line = line;
-                FitnessClass = fitnessClass;
-                Totals = totals;
-                Previous = previous;
-            }
+		public BreakPoint(int position, int demerits, float ratio, int line, int fitnessClass, Sum totals, LinkedListNode<BreakPoint>? previous) {
+			Position = position;
+			Demerits = demerits;
+			Ratio = ratio;
+			Line = line;
+			FitnessClass = fitnessClass;
+			Totals = totals;
+			Previous = previous;
+		}
 
 #if DEBUG
-            public override string ToString()
-            {
-                return String.Format("BreakPoint: Position = {0} Demerits = {1} Ratio = {2} Line = {3} FitnessClass = {4} Totals = {{{5}}} Previous = {{{6}}}", Position, Demerits, Ratio, Line, FitnessClass, Totals.ToString(), Previous != null ? Previous.Value.ToString() : "Null");
-            }
+		public override string ToString() {
+			return String.Format("BreakPoint: Position = {0} Demerits = {1} Ratio = {2} Line = {3} FitnessClass = {4} Totals = {{{5}}} Previous = {{{6}}}", Position, Demerits, Ratio, Line, FitnessClass, Totals.ToString(), Previous != null ? Previous.Value.ToString() : "Null");
+		}
 #endif
-        }
-    }
+	}
 }

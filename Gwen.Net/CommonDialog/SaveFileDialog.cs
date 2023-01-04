@@ -63,7 +63,7 @@ namespace Gwen.Net.CommonDialog
         private void OnMessageBoxDismissed(ControlBase sender, MessageBoxResultEventArgs args)
         {
             if (args.Result == MessageBoxResult.Yes)
-                Close(sender.UserData as string);
+                Close(sender.UserData as string ?? "C:/");
         }
     }
 }

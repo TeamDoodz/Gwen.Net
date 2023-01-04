@@ -18,8 +18,8 @@ public class FontCache : IDisposable {
 
 	private Font InternalGetFont(Renderer.RendererBase renderer, string faceName, int size, FontStyle style) {
 		string id = String.Format("{0};{1};{2}", faceName, size, (int)style);
-		Font font;
-		if (!cache.TryGetValue(id, out font)) {
+
+		if (!cache.TryGetValue(id, out Font? font)) {
 			font = new Font(renderer, faceName, size);
 
 			if ((style & FontStyle.Bold) != 0)
@@ -53,7 +53,7 @@ public class FontCache : IDisposable {
 		}
 	}
 
-	private static FontCache instance = null;
+	private static FontCache? instance = null;
 
-	private Dictionary<string, Font> cache = new Dictionary<string, Font>();
+	private readonly Dictionary<string, Font> cache = new Dictionary<string, Font>();
 }

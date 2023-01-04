@@ -1,50 +1,43 @@
 ﻿using System;
-using Gwen.Net.Control;
 
-namespace Gwen.Net.Control.Internal
-{
-    public class WindowTitleBar : Dragger
-    {
-        private readonly Label m_Title;
-        private readonly CloseButton m_CloseButton;
+namespace Gwen.Net.Control.Internal;
 
-        public Label Title { get { return m_Title; } }
-        public CloseButton CloseButton { get { return m_CloseButton; } }
+public class WindowTitleBar : Dragger {
+	private readonly Label title;
+	private readonly CloseButton closeButton;
 
-        public WindowTitleBar(ControlBase parent)
-            : base(parent)
-        {
-            m_Title = new Label(this);
-            m_Title.Alignment = Alignment.Left | Alignment.CenterV;
+	public Label Title { get { return title; } }
+	public CloseButton CloseButton { get { return closeButton; } }
 
-            m_CloseButton = new CloseButton(this, parent as Window);
-            m_CloseButton.IsTabable = false;
-            m_CloseButton.Name = "closeButton";
+	public WindowTitleBar(ControlBase? parent)
+		: base(parent) {
+		title = new Label(this);
+		title.Alignment = Alignment.Left | Alignment.CenterV;
 
-            Target = parent;
-        }
+		closeButton = new CloseButton(this, parent as Window ?? throw new ArgumentException("Parent control must be of type Window.", nameof(parent)));
+		closeButton.IsTabable = false;
+		closeButton.Name = "closeButton";
 
-        protected override Size Measure(Size availableSize)
-        {
-            m_Title.DoMeasure(availableSize);
+		Target = parent;
+	}
 
-            if (!m_CloseButton.IsCollapsed)
-                m_CloseButton.DoMeasure(availableSize);
+	protected override Size Measure(Size availableSize) {
+		title.DoMeasure(availableSize);
 
-            return availableSize;
-        }
+		if(!closeButton.IsCollapsed)
+			closeButton.DoMeasure(availableSize);
 
-        protected override Size Arrange(Size finalSize)
-        {
-            m_Title.DoArrange(new Rectangle(8, 0, m_Title.MeasuredSize.Width, finalSize.Height));
+		return availableSize;
+	}
 
-            if (!m_CloseButton.IsCollapsed)
-            {
-                int closeButtonSize = finalSize.Height;
-                m_CloseButton.DoArrange(new Rectangle(finalSize.Width - 6 - closeButtonSize, 0, closeButtonSize, closeButtonSize));
-            }
+	protected override Size Arrange(Size finalSize) {
+		title.DoArrange(new Rectangle(8, 0, title.MeasuredSize.Width, finalSize.Height));
 
-            return finalSize;
-        }
-    }
+		if(!closeButton.IsCollapsed) {
+			int closeButtonSize = finalSize.Height;
+			closeButton.DoArrange(new Rectangle(finalSize.Width - 6 - closeButtonSize, 0, closeButtonSize, closeButtonSize));
+		}
+
+		return finalSize;
+	}
 }

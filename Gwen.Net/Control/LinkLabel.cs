@@ -1,76 +1,65 @@
 ﻿using System;
-using Gwen.Net.Control.Internal;
 
-namespace Gwen.Net.Control
-{
-    public class LinkClickedEventArgs : EventArgs
-    {
-        public string Link { get; private set; }
+namespace Gwen.Net.Control;
 
-        internal LinkClickedEventArgs(string link)
-        {
-            this.Link = link;
-        }
-    }
+public class LinkClickedEventArgs : EventArgs {
+	public string Link { get; private set; }
 
-    [Xml.XmlControl]
-    public class LinkLabel : Label
-    {
-        private Color m_normalColor;
-        private Font m_normalFont;
-        private Color? m_hoverColor;
+	internal LinkClickedEventArgs(string link) {
+		this.Link = link;
+	}
+}
 
-        [Xml.XmlProperty]
-        public string Link { get; set; }
+[Xml.XmlControl]
+public class LinkLabel : Label {
+	private Color normalColor;
+	private Font? normalFont;
+	private Color? hoverColor;
 
-        [Xml.XmlProperty]
-        public Color HoverColor { get { return m_hoverColor != null ? (Color)m_hoverColor : this.TextColor; } set { m_hoverColor = value; } }
+	[Xml.XmlProperty]
+	public string Link { get; set; } = "";
 
-        [Xml.XmlProperty]
-        public Font HoverFont { get; set; }
+	[Xml.XmlProperty]
+	public Color HoverColor { get { return hoverColor != null ? (Color)hoverColor : this.TextColor; } set { hoverColor = value; } }
 
-        [Xml.XmlEvent]
-        public event ControlBase.GwenEventHandler<LinkClickedEventArgs> LinkClicked;
+	[Xml.XmlProperty]
+	public Font? HoverFont { get; set; }
 
-        public LinkLabel(ControlBase parent)
-            : base(parent)
-        {
-            m_hoverColor = null;
-            HoverFont = null;
+	[Xml.XmlEvent]
+	public event ControlBase.GwenEventHandler<LinkClickedEventArgs>? LinkClicked;
 
-            base.HoverEnter += OnHoverEnter;
-            base.HoverLeave += OnHoverLeave;
-            base.Clicked += OnClicked;
-        }
+	public LinkLabel(ControlBase? parent)
+		: base(parent) {
+		hoverColor = null;
+		HoverFont = null;
 
-        private void OnHoverEnter(ControlBase control, EventArgs args)
-        {
-            Cursor = Cursor.Finger;
+		base.HoverEnter += OnHoverEnter;
+		base.HoverLeave += OnHoverLeave;
+		base.Clicked += OnClicked;
+	}
 
-            m_normalColor = m_Text.TextColor;
-            m_Text.TextColor = this.HoverColor;
+	private void OnHoverEnter(ControlBase control, EventArgs args) {
+		Cursor = Cursor.Finger;
 
-            if (this.HoverFont != null)
-            {
-                m_normalFont = m_Text.Font;
-                m_Text.Font = this.HoverFont;
-            }
-        }
+		normalColor = text.TextColor;
+		text.TextColor = this.HoverColor;
 
-        private void OnHoverLeave(ControlBase control, EventArgs args)
-        {
-            m_Text.TextColor = m_normalColor;
+		if(this.HoverFont != null) {
+			normalFont = text.Font;
+			text.Font = this.HoverFont;
+		}
+	}
 
-            if (this.HoverFont != null)
-            {
-                m_Text.Font = m_normalFont;
-            }
-        }
+	private void OnHoverLeave(ControlBase control, EventArgs args) {
+		text.TextColor = normalColor;
 
-        private void OnClicked(ControlBase control, ClickedEventArgs args)
-        {
-            if (LinkClicked != null)
-                LinkClicked(this, new LinkClickedEventArgs(this.Link));
-        }
-    }
+		if(this.HoverFont != null) {
+			text.Font = normalFont;
+		}
+	}
+
+	private void OnClicked(ControlBase control, ClickedEventArgs args) {
+		if(LinkClicked != null)
+			LinkClicked(this, new LinkClickedEventArgs(this.Link));
+	}
 }

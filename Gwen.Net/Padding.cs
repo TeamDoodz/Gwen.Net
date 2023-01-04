@@ -60,7 +60,7 @@ public readonly struct Padding : IEquatable<Padding> {
 		return new Padding(lhs.Left - rhs.Left, lhs.Top - rhs.Top, lhs.Right - rhs.Right, lhs.Bottom - rhs.Bottom);
 	}
 
-	public override bool Equals(object obj) {
+	public override bool Equals(object? obj) {
 		if (ReferenceEquals(null, obj)) return false;
 		if (obj.GetType() != typeof(Padding)) return false;
 		return Equals((Padding)obj);

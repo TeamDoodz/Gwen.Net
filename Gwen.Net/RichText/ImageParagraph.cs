@@ -1,35 +1,29 @@
-﻿using System;
+﻿namespace Gwen.Net.RichText;
 
-namespace Gwen.Net.RichText
-{
-    public class ImageParagraph : Paragraph
-    {
-        private string m_ImageName;
-        private Size? m_ImageSize;
-        private Rectangle? m_TextureRect;
-        private Color? m_ImageColor;
+public class ImageParagraph : Paragraph {
+	private string? imageName;
+	private Size? imageSize;
+	private Rectangle? textureRect;
+	private Color? imageColor;
 
-        public string ImageName { get { return m_ImageName; } }
-        public Size? ImageSize { get { return m_ImageSize; } }
-        public Rectangle? TextureRect { get { return m_TextureRect; } }
-        public Color? ImageColor { get { return m_ImageColor; } }
+	public string? ImageName => imageName;
+	public Size? ImageSize => imageSize;
+	public Rectangle? TextureRect => textureRect;
+	public Color? ImageColor => imageColor;
 
-        public ImageParagraph(Margin margin = new Margin(), int indent = 0)
-            : base(margin, indent, indent)
-        {
-        }
+	public ImageParagraph(Margin margin = new Margin(), int indent = 0)
+		: base(margin, indent, indent) {
+	}
 
-        public ImageParagraph Image(string imageName, Size? imageSize = null, Rectangle? textureRect = null, Color? imageColor = null)
-        {
-            m_ImageName = imageName;
-            if (imageSize != null)
-                m_ImageSize = imageSize;
-            if (textureRect != null)
-                m_TextureRect = textureRect;
-            if (imageColor != null)
-                m_ImageColor = imageColor;
+	public ImageParagraph Image(string imageName, Size? imageSize = null, Rectangle? textureRect = null, Color? imageColor = null) {
+		this.imageName = imageName;
+		if(imageSize != null)
+			this.imageSize = imageSize;
+		if(textureRect != null)
+			this.textureRect = textureRect;
+		if(imageColor != null)
+			this.imageColor = imageColor;
 
-            return this;
-        }
-    }
+		return this;
+	}
 }

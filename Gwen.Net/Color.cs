@@ -81,6 +81,15 @@ public struct Color {
 		}
 	}
 
+	/// <summary>
+	/// Linearly interpolates between two colors.
+	/// </summary>
+	public static Color Lerp(Color toColor, Color fromColor, float amount) {
+		Color delta = toColor.Subtract(fromColor);
+		delta = delta.Multiply(amount);
+		return fromColor.Add(delta);
+	}
+
 	public override string ToString() {
 		return String.Format("R = {0} G = {1} B = {2} A = {3}", R, G, B, A);
 	}

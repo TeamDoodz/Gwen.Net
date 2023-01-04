@@ -1,270 +1,238 @@
 ﻿using System;
 using Gwen.Net.Control.Internal;
 
-namespace Gwen.Net.Control
-{
-    [Xml.XmlControl]
-    public class VerticalSplitter : ControlBase
-    {
-        private readonly SplitterBar m_HSplitter;
-        private readonly ControlBase[] m_Sections;
+namespace Gwen.Net.Control;
 
-        private float m_HVal; // 0-1
-        private int m_BarSize; // pixels
-        private int m_ZoomedSection; // 0-3
+[Xml.XmlControl]
+public class VerticalSplitter : ControlBase {
+	private readonly SplitterBar hSplitter;
+	private readonly ControlBase?[] sections;
 
-        /// <summary>
-        /// Splitter position (0 - 1)
-        /// </summary>
-        [Xml.XmlProperty]
-        public float Value { get { return m_HVal; } set { SetHValue(value); } }
+	private float hVal; // 0-1
+	private int barSize; // pixels
+	private int zoomedSectionIndex; // 0-3
 
-        /// <summary>
-        /// Indicates whether any of the panels is zoomed.
-        /// </summary>
-        public bool IsZoomed { get { return m_ZoomedSection != -1; } }
+	/// <summary>
+	/// Splitter position (0 - 1)
+	/// </summary>
+	[Xml.XmlProperty]
+	public float Value { get { return hVal; } set { SetHValue(value); } }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether splitters should be visible.
-        /// </summary>
-        [Xml.XmlProperty]
-        public bool SplittersVisible
-        {
-            get { return m_HSplitter.ShouldDrawBackground; }
-            set { m_HSplitter.ShouldDrawBackground = value; }
-        }
+	/// <summary>
+	/// Indicates whether any of the panels is zoomed.
+	/// </summary>
+	public bool IsZoomed { get { return zoomedSectionIndex != -1; } }
 
-        /// <summary>
-        /// Gets or sets the size of the splitter.
-        /// </summary>
-        [Xml.XmlProperty]
-        public int SplitterSize { get { return m_BarSize; } set { m_BarSize = value; } }
+	/// <summary>
+	/// Gets or sets a value indicating whether splitters should be visible.
+	/// </summary>
+	[Xml.XmlProperty]
+	public bool SplittersVisible {
+		get { return hSplitter.ShouldDrawBackground; }
+		set { hSplitter.ShouldDrawBackground = value; }
+	}
 
-        /// <summary>
-        /// Invoked when one of the panels has been zoomed (maximized).
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> PanelZoomed;
+	/// <summary>
+	/// Gets or sets the size of the splitter.
+	/// </summary>
+	[Xml.XmlProperty]
+	public int SplitterSize { get { return barSize; } set { barSize = value; } }
 
-        /// <summary>
-        /// Invoked when one of the panels has been unzoomed (restored).
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> PanelUnZoomed;
+	/// <summary>
+	/// Invoked when one of the panels has been zoomed (maximized).
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<EventArgs>? PanelZoomed;
 
-        /// <summary>
-        /// Invoked when the zoomed panel has been changed.
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> ZoomChanged;
+	/// <summary>
+	/// Invoked when one of the panels has been unzoomed (restored).
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<EventArgs>? PanelUnZoomed;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CrossSplitter"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public VerticalSplitter(ControlBase parent)
-            : base(parent)
-        {
-            m_Sections = new ControlBase[2];
+	/// <summary>
+	/// Invoked when the zoomed panel has been changed.
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<EventArgs>? ZoomChanged;
 
-            m_HSplitter = new SplitterBar(this);
-            m_HSplitter.Dragged += OnHorizontalMoved;
-            m_HSplitter.Cursor = Cursor.SizeWE;
+	/// <summary>
+	/// Initializes a new instance of the <see cref="CrossSplitter"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	public VerticalSplitter(ControlBase? parent)
+		: base(parent) {
+		sections = new ControlBase[2];
 
-            m_HVal = 0.5f;
+		hSplitter = new SplitterBar(this);
+		hSplitter.Dragged += OnHorizontalMoved;
+		hSplitter.Cursor = Cursor.SizeWE;
 
-            SetPanel(0, null);
-            SetPanel(1, null);
+		hVal = 0.5f;
 
-            SplitterSize = 5;
-            SplittersVisible = false;
+		SetPanel(0, null);
+		SetPanel(1, null);
 
-            m_ZoomedSection = -1;
-        }
+		SplitterSize = 5;
+		SplittersVisible = false;
 
-        /// <summary>
-        /// Centers the panels so that they take even amount of space.
-        /// </summary>
-        public void CenterPanels()
-        {
-            m_HVal = 0.5f;
-            Invalidate();
-        }
+		zoomedSectionIndex = -1;
+	}
 
-        public void SetHValue(float value)
-        {
-            if (value <= 1f || value >= 0)
-                m_HVal = value;
+	/// <summary>
+	/// Centers the panels so that they take even amount of space.
+	/// </summary>
+	public void CenterPanels() {
+		hVal = 0.5f;
+		Invalidate();
+	}
 
-            Invalidate();
-        }
+	public void SetHValue(float value) {
+		if(value <= 1f || value >= 0)
+			hVal = value;
 
-        protected void OnHorizontalMoved(ControlBase control, EventArgs args)
-        {
-            m_HVal = CalculateValueHorizontal();
-            Invalidate();
-        }
+		Invalidate();
+	}
 
-        private float CalculateValueHorizontal()
-        {
-            return m_HSplitter.ActualLeft / (float)(ActualWidth - m_HSplitter.ActualWidth);
-        }
+	protected void OnHorizontalMoved(ControlBase control, EventArgs args) {
+		hVal = CalculateValueHorizontal();
+		Invalidate();
+	}
 
-        protected override Size Measure(Size availableSize)
-        {
-            Size size = Size.Zero;
+	private float CalculateValueHorizontal() {
+		return hSplitter.ActualLeft / (float)(ActualWidth - hSplitter.ActualWidth);
+	}
 
-            m_HSplitter.DoMeasure(new Size(m_BarSize, availableSize.Height));
-            size.Width += m_HSplitter.Width;
+	protected override Size Measure(Size availableSize) {
+		Size size = Size.Zero;
 
-            int h = (int)((availableSize.Width - m_BarSize) * m_HVal);
+		hSplitter.DoMeasure(new Size(barSize, availableSize.Height));
+		size.Width += hSplitter.Width;
 
-            if (m_ZoomedSection == -1)
-            {
-                if (m_Sections[0] != null)
-                {
-                    m_Sections[0].DoMeasure(new Size(h, availableSize.Height));
-                    size.Width += m_Sections[0].MeasuredSize.Width;
-                    size.Height = Math.Max(size.Height, m_Sections[0].MeasuredSize.Height);
-                }
+		int h = (int)((availableSize.Width - barSize) * hVal);
 
-                if (m_Sections[1] != null)
-                {
-                    m_Sections[1].DoMeasure(new Size(availableSize.Width - m_BarSize - h, availableSize.Height));
-                    size.Width += m_Sections[1].MeasuredSize.Width;
-                    size.Height = Math.Max(size.Height, m_Sections[1].MeasuredSize.Height);
-                }
-            }
-            else
-            {
-                m_Sections[m_ZoomedSection].DoMeasure(availableSize);
-                size = m_Sections[m_ZoomedSection].MeasuredSize;
-            }
+		if(zoomedSectionIndex == -1) {
+			if(sections[0] is ControlBase section0) {
+				section0.DoMeasure(new Size(h, availableSize.Height));
+				size.Width += section0.MeasuredSize.Width;
+				size.Height = Math.Max(size.Height, section0.MeasuredSize.Height);
+			}
 
-            return size;
-        }
+			if(sections[1] is ControlBase section1) {
+				section1.DoMeasure(new Size(availableSize.Width - barSize - h, availableSize.Height));
+				size.Width += section1.MeasuredSize.Width;
+				size.Height = Math.Max(size.Height, section1.MeasuredSize.Height);
+			}
+		} else {
+			if(sections[zoomedSectionIndex] is ControlBase zoomedSection) {
+				zoomedSection.DoMeasure(availableSize);
+				size = zoomedSection.MeasuredSize;
+			}
+		}
 
-        protected override Size Arrange(Size finalSize)
-        {
-            int h = (int)((finalSize.Width - m_BarSize) * m_HVal);
+		return size;
+	}
 
-            m_HSplitter.DoArrange(new Rectangle(h, 0, m_HSplitter.MeasuredSize.Width, finalSize.Height));
+	protected override Size Arrange(Size finalSize) {
+		int h = (int)((finalSize.Width - barSize) * hVal);
 
-            if (m_ZoomedSection == -1)
-            {
-                if (m_Sections[0] != null)
-                    m_Sections[0].DoArrange(new Rectangle(0, 0, h, finalSize.Height));
+		hSplitter.DoArrange(new Rectangle(h, 0, hSplitter.MeasuredSize.Width, finalSize.Height));
 
-                if (m_Sections[1] != null)
-                    m_Sections[1].DoArrange(new Rectangle(h + m_BarSize, 0, finalSize.Width - m_BarSize - h, finalSize.Height));
-            }
-            else
-            {
-                m_Sections[m_ZoomedSection].DoArrange(new Rectangle(0, 0, finalSize.Width, finalSize.Height));
-            }
+		if(zoomedSectionIndex == -1) {
+			sections[0]?.DoArrange(new Rectangle(0, 0, h, finalSize.Height));
 
-            return finalSize;
-        }
+			sections[1]?.DoArrange(new Rectangle(h + barSize, 0, finalSize.Width - barSize - h, finalSize.Height));
+		} else {
+			sections[zoomedSectionIndex]?.DoArrange(new Rectangle(0, 0, finalSize.Width, finalSize.Height));
+		}
 
-        /// <summary>
-        /// Assigns a control to the specific inner section.
-        /// </summary>
-        /// <param name="index">Section index (0-3).</param>
-        /// <param name="panel">Control to assign.</param>
-        public void SetPanel(int index, ControlBase panel)
-        {
-            m_Sections[index] = panel;
+		return finalSize;
+	}
 
-            if (panel != null)
-            {
-                panel.Parent = this;
-            }
+	/// <summary>
+	/// Assigns a control to the specific inner section.
+	/// </summary>
+	/// <param name="index">Section index (0-3).</param>
+	/// <param name="panel">Control to assign.</param>
+	public void SetPanel(int index, ControlBase? panel) {
+		sections[index] = panel;
 
-            Invalidate();
-        }
+		if(panel != null) {
+			panel.Parent = this;
+		}
 
-        /// <summary>
-        /// Gets the specific inner section.
-        /// </summary>
-        /// <param name="index">Section index (0-3).</param>
-        /// <returns>Specified section.</returns>
-        public ControlBase GetPanel(int index)
-        {
-            return m_Sections[index];
-        }
+		Invalidate();
+	}
 
-        protected override void OnChildAdded(ControlBase child)
-        {
-            if (!(child is SplitterBar))
-            {
-                if (m_Sections[0] == null)
-                    SetPanel(0, child);
-                else if (m_Sections[1] == null)
-                    SetPanel(1, child);
-                else
-                    throw new Exception("Too many panels added.");
-            }
+	/// <summary>
+	/// Gets the specific inner section.
+	/// </summary>
+	/// <param name="index">Section index (0-3).</param>
+	/// <returns>Specified section.</returns>
+	public ControlBase? GetPanel(int index) {
+		return sections[index];
+	}
 
-            base.OnChildAdded(child);
-        }
+	protected override void OnChildAdded(ControlBase child) {
+		if(!(child is SplitterBar)) {
+			if(sections[0] == null)
+				SetPanel(0, child);
+			else if(sections[1] == null)
+				SetPanel(1, child);
+			else
+				throw new Exception("Too many panels added.");
+		}
 
-        /// <summary>
-        /// Internal handler for the zoom changed event.
-        /// </summary>
-        protected void OnZoomChanged()
-        {
-            if (ZoomChanged != null)
-                ZoomChanged.Invoke(this, EventArgs.Empty);
+		base.OnChildAdded(child);
+	}
 
-            if (m_ZoomedSection == -1)
-            {
-                if (PanelUnZoomed != null)
-                    PanelUnZoomed.Invoke(this, EventArgs.Empty);
-            }
-            else
-            {
-                if (PanelZoomed != null)
-                    PanelZoomed.Invoke(this, EventArgs.Empty);
-            }
-        }
+	/// <summary>
+	/// Internal handler for the zoom changed event.
+	/// </summary>
+	protected void OnZoomChanged() {
+		if(ZoomChanged != null)
+			ZoomChanged.Invoke(this, EventArgs.Empty);
 
-        /// <summary>
-        /// Maximizes the specified panel so it fills the entire control.
-        /// </summary>
-        /// <param name="section">Panel index (0-3).</param>
-        public void Zoom(int section)
-        {
-            UnZoom();
+		if(zoomedSectionIndex == -1) {
+			if(PanelUnZoomed != null)
+				PanelUnZoomed.Invoke(this, EventArgs.Empty);
+		} else {
+			if(PanelZoomed != null)
+				PanelZoomed.Invoke(this, EventArgs.Empty);
+		}
+	}
 
-            if (m_Sections[section] != null)
-            {
-                for (int i = 0; i < 2; i++)
-                {
-                    if (i != section && m_Sections[i] != null)
-                        m_Sections[i].IsHidden = true;
-                }
-                m_ZoomedSection = section;
+	/// <summary>
+	/// Maximizes the specified panel so it fills the entire control.
+	/// </summary>
+	/// <param name="sectionIndex">Panel index (0-3).</param>
+	public void Zoom(int sectionIndex) {
+		UnZoom();
 
-                Invalidate();
-            }
-            OnZoomChanged();
-        }
+		if(sections[sectionIndex] != null) {
+			for(int i = 0; i < 2; i++) {
+				if(i != sectionIndex && sections[i] is ControlBase section)
+					section.IsHidden = true;
+			}
+			zoomedSectionIndex = sectionIndex;
 
-        /// <summary>
-        /// Restores the control so all panels are visible.
-        /// </summary>
-        public void UnZoom()
-        {
-            m_ZoomedSection = -1;
+			Invalidate();
+		}
+		OnZoomChanged();
+	}
 
-            for (int i = 0; i < 2; i++)
-            {
-                if (m_Sections[i] != null)
-                    m_Sections[i].IsHidden = false;
-            }
+	/// <summary>
+	/// Restores the control so all panels are visible.
+	/// </summary>
+	public void UnZoom() {
+		zoomedSectionIndex = -1;
 
-            Invalidate();
-            OnZoomChanged();
-        }
-    }
+		for(int i = 0; i < 2; i++) {
+			if(sections[i] is ControlBase section)
+				section.IsHidden = false;
+		}
+
+		Invalidate();
+		OnZoomChanged();
+	}
 }

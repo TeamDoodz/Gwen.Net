@@ -9,19 +9,19 @@ namespace Gwen.Net.Control
 	[Xml.XmlControl(CustomHandler = "XmlElementHandler")]
     public class ListBoxRow : TableRow
     {
-        private bool m_Selected;
+        private bool isSelected;
 
-        private ListBox m_ListBox;
-        public ListBox ListBox { get { return m_ListBox; } }
+        private ListBox listBox;
+        public ListBox ListBox { get { return listBox; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ListBoxRow"/> class.
         /// </summary>
         /// <param name="parent">Parent control.</param>
-        public ListBoxRow(ControlBase parent)
+        public ListBoxRow(ControlBase? parent)
             : base(parent)
         {
-            m_ListBox = parent as ListBox;
+            listBox = parent as ListBox ?? throw new ArgumentException("Parent control must be of type ListBox.", nameof(parent));
 
             MouseInputEnabled = true;
             IsSelected = false;
@@ -32,10 +32,10 @@ namespace Gwen.Net.Control
         /// </summary>
         public bool IsSelected
         {
-            get { return m_Selected; }
+            get { return isSelected; }
             set
             {
-                m_Selected = value;
+                isSelected = value;
                 if (value)
                     SetTextColor(Skin.Colors.ListBox.Text_Selected);
                 else
@@ -81,12 +81,18 @@ namespace Gwen.Net.Control
                     {
                         if (parser.MoveToContent())
                         {
-                            ControlBase column = parser.ParseElement(element);
+                            ControlBase? column = parser.ParseElement(element);
+							if(column == null) {
+								continue;
+							}
                             element.SetCellContents(colIndex++, column, true);
                         }
                         else
                         {
-                            string colText = parser.GetAttribute("Text");
+                            string? colText = parser.GetAttribute("Text");
+							if(colText == null) {
+								continue;
+							}
                             element.SetCellText(colIndex++, colText != null ? colText : String.Empty);
                         }
                     }

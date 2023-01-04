@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Gwen.Net.Renderer;
 
 namespace Gwen.Net;
 
@@ -15,7 +16,7 @@ public class Texture : IDisposable {
 	/// <summary>
 	/// Renderer data.
 	/// </summary>
-	public object RendererData { get; set; }
+	public object? RendererData { get; set; }
 
 	/// <summary>
 	/// Indicates that the texture failed to load.
@@ -32,18 +33,22 @@ public class Texture : IDisposable {
 	/// </summary>
 	public int Height { get; set; }
 
-	private readonly Renderer.RendererBase renderer;
+	private readonly RendererBase renderer;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Texture"/> class.
 	/// </summary>
 	/// <param name="renderer">Renderer to use.</param>
-	public Texture(Renderer.RendererBase renderer) {
+	/// <param name="name">The name of the texture.</param>
+	public Texture(RendererBase renderer, string name) {
 		this.renderer = renderer;
 		Width = 4;
 		Height = 4;
 		Failed = false;
+		Name = name;
 	}
+
+	public Texture(RendererBase renderer) : this(renderer, "Unnamed Texture " + Guid.NewGuid().ToString()) { }
 
 	/// <summary>
 	/// Loads the specified texture.

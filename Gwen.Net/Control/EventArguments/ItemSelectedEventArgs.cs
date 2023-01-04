@@ -1,14 +1,11 @@
 ﻿using System;
 
-namespace Gwen.Net.Control
-{
-    public class ItemSelectedEventArgs : EventArgs
-    {
-        public ControlBase SelectedItem { get; private set; }
+namespace Gwen.Net.Control;
 
-        internal ItemSelectedEventArgs(ControlBase selecteditem)
-        {
-            this.SelectedItem = selecteditem;
-        }
-    }
+public class ItemSelectedEventArgs : EventArgs {
+	public ControlBase? SelectedItem { get; private set; }
+
+	internal ItemSelectedEventArgs(ControlBase? selecteditem) {
+		SelectedItem = selecteditem;
+	}
 }

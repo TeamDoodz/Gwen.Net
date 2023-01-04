@@ -1,304 +1,272 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using Gwen.Net.Control.Internal;
 using Gwen.Net.Control.Layout;
 
-namespace Gwen.Net.Control
-{
-    /// <summary>
-    /// Popup menu.
-    /// </summary>
-    [Xml.XmlControl]
-    public class Menu : ScrollControl
-    {
-        protected StackLayout m_Layout;
+namespace Gwen.Net.Control;
 
-        private bool m_DisableIconMargin;
-        private bool m_DeleteOnClose;
+/// <summary>
+/// Popup menu.
+/// </summary>
+[Xml.XmlControl]
+public class Menu : ScrollControl {
+	protected StackLayout layout;
 
-        private MenuItem m_ParentMenuItem;
+	private bool disableIconMargin;
+	private bool deleteOnClose;
 
-        internal override bool IsMenuComponent { get { return true; } }
+	private MenuItem? parentMenuItem;
 
-        /// <summary>
-        /// Parent menu item that owns the menu if this is a child of the menu item.
-        /// Real parent of the menu is the canvas.
-        /// </summary>
-        public MenuItem ParentMenuItem { get { return m_ParentMenuItem; } internal set { m_ParentMenuItem = value; } }
+	internal override bool IsMenuComponent { get { return true; } }
 
-        [Xml.XmlProperty]
-        public bool IconMarginDisabled { get { return m_DisableIconMargin; } set { m_DisableIconMargin = value; } }
+	/// <summary>
+	/// Parent menu item that owns the menu if this is a child of the menu item.
+	/// Real parent of the menu is the canvas.
+	/// </summary>
+	public MenuItem? ParentMenuItem { get { return parentMenuItem; } internal set { parentMenuItem = value; } }
 
-        /// <summary>
-        /// Determines whether the menu should be disposed on close.
-        /// </summary>
-        [Xml.XmlProperty]
-        public bool DeleteOnClose { get { return m_DeleteOnClose; } set { m_DeleteOnClose = value; } }
+	[Xml.XmlProperty]
+	public bool IconMarginDisabled { get { return disableIconMargin; } set { disableIconMargin = value; } }
 
-        /// <summary>
-        /// Determines whether the menu should open on mouse hover.
-        /// </summary>
-        protected virtual bool ShouldHoverOpenMenu { get { return true; } }
+	/// <summary>
+	/// Determines whether the menu should be disposed on close.
+	/// </summary>
+	[Xml.XmlProperty]
+	public bool DeleteOnClose { get { return deleteOnClose; } set { deleteOnClose = value; } }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Menu"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public Menu(ControlBase parent)
-            : base(parent)
-        {
-            Padding = Padding.Two;
+	/// <summary>
+	/// Determines whether the menu should open on mouse hover.
+	/// </summary>
+	protected virtual bool ShouldHoverOpenMenu { get { return true; } }
 
-            Collapse(true, false);
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Menu"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	public Menu(ControlBase? parent)
+		: base(parent) {
+		Padding = Padding.Two;
 
-            IconMarginDisabled = false;
+		Collapse(true, false);
 
-            AutoHideBars = true;
-            EnableScroll(false, true);
-            DeleteOnClose = false;
+		IconMarginDisabled = false;
 
-            this.HorizontalAlignment = HorizontalAlignment.Left;
-            this.VerticalAlignment = VerticalAlignment.Top;
+		AutoHideBars = true;
+		EnableScroll(false, true);
+		DeleteOnClose = false;
 
-            m_Layout = new StackLayout(this);
-        }
+		this.HorizontalAlignment = HorizontalAlignment.Left;
+		this.VerticalAlignment = VerticalAlignment.Top;
 
-        /// <summary>
-        /// Renders the control using specified skin.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void Render(Skin.SkinBase skin)
-        {
-            skin.DrawMenu(this, IconMarginDisabled);
-        }
+		layout = new StackLayout(this);
+	}
 
-        /// <summary>
-        /// Renders under the actual control (shadows etc).
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void RenderUnder(Skin.SkinBase skin)
-        {
-            base.RenderUnder(skin);
-            skin.DrawShadow(this);
-        }
+	/// <summary>
+	/// Renders the control using specified skin.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void Render(Skin.SkinBase skin) {
+		skin.DrawMenu(this, IconMarginDisabled);
+	}
 
-        /// <summary>
-        ///  Opens the menu.
-        /// </summary>
-        public void Open()
-        {
-            Show();
-            BringToFront();
-            Point mouse = Input.InputHandler.MousePosition;
-            SetPosition(mouse.X, mouse.Y);
-        }
+	/// <summary>
+	/// Renders under the actual control (shadows etc).
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void RenderUnder(Skin.SkinBase skin) {
+		base.RenderUnder(skin);
+		skin.DrawShadow(this);
+	}
 
-        protected override Size Measure(Size availableSize)
-        {
-            availableSize.Height = Math.Min(availableSize.Height, GetCanvas().ActualHeight - this.Top);
+	/// <summary>
+	///  Opens the menu.
+	/// </summary>
+	public void Open() {
+		Show();
+		BringToFront();
+		Point mouse = Input.InputHandler.MousePosition;
+		SetPosition(mouse.X, mouse.Y);
+	}
 
-            Size size = base.Measure(availableSize);
+	protected override Size Measure(Size availableSize) {
+		availableSize.Height = Math.Min(availableSize.Height, GetCanvas().ActualHeight - this.Top);
 
-            size.Width = Math.Min(this.Content.MeasuredSize.Width + Padding.Left + Padding.Right, availableSize.Width);
-            size.Height = Math.Min(this.Content.MeasuredSize.Height + Padding.Top + Padding.Bottom, availableSize.Height);
+		Size size = base.Measure(availableSize);
 
-            return size;
-        }
+		size.Width = Math.Min(this.Content?.MeasuredSize.Width ?? 1 + Padding.Left + Padding.Right, availableSize.Width);
+		size.Height = Math.Min(this.Content?.MeasuredSize.Height ?? 1 + Padding.Top + Padding.Bottom, availableSize.Height);
 
-        /// <summary>
-        /// Adds a new menu item.
-        /// </summary>
-        /// <param name="text">Item text.</param>
-        /// <returns>Newly created control.</returns>
-        public virtual MenuItem AddItem(string text)
-        {
-            return AddItem(text, String.Empty);
-        }
+		return size;
+	}
 
-        /// <summary>
-        /// Adds a new menu item.
-        /// </summary>
-        /// <param name="text">Item text.</param>
-        /// <param name="iconName">Icon texture name.</param>
-        /// <param name="accelerator">Accelerator for this item.</param>
-        /// <returns>Newly created control.</returns>
-        public virtual MenuItem AddItem(string text, string iconName, string accelerator = null)
-        {
-            MenuItem item = new MenuItem(this);
-            item.Padding = Padding.Three;
-            item.Text = text;
-            if (!String.IsNullOrWhiteSpace(iconName))
-                item.SetImage(iconName, ImageAlign.Left | ImageAlign.CenterV);
-            if (!String.IsNullOrWhiteSpace(accelerator))
-                item.SetAccelerator(accelerator);
+	/// <summary>
+	/// Adds a new menu item.
+	/// </summary>
+	/// <param name="text">Item text.</param>
+	/// <returns>Newly created control.</returns>
+	public virtual MenuItem AddItem(string text) {
+		return AddItem(text, String.Empty);
+	}
 
-            OnAddItem(item);
+	/// <summary>
+	/// Adds a new menu item.
+	/// </summary>
+	/// <param name="text">Item text.</param>
+	/// <param name="iconName">Icon texture name.</param>
+	/// <param name="accelerator">Accelerator for this item.</param>
+	/// <returns>Newly created control.</returns>
+	public virtual MenuItem AddItem(string text, string iconName, string accelerator = "") {
+		MenuItem item = new(this) {
+			Padding = Padding.Three,
+			Text = text
+		};
+		if(!String.IsNullOrWhiteSpace(iconName))
+			item.SetImage(iconName, ImageAlign.Left | ImageAlign.CenterV);
+		if(!String.IsNullOrWhiteSpace(accelerator))
+			item.SetAccelerator(accelerator);
 
-            return item;
-        }
+		OnAddItem(item);
 
-        /// <summary>
-        /// Adds a menu item.
-        /// </summary>
-        /// <param name="item">Item.</param>
-        public virtual void AddItem(MenuItem item)
-        {
-            item.Parent = this;
+		return item;
+	}
 
-            item.Padding = Padding.Three;
+	/// <summary>
+	/// Adds a menu item.
+	/// </summary>
+	/// <param name="item">Item.</param>
+	public virtual void AddItem(MenuItem item) {
+		item.Parent = this;
 
-            OnAddItem(item);
-        }
-        public MenuItem AddItemPath(string text)
-        {
-            return AddItemPath(text, String.Empty);
-        }
+		item.Padding = Padding.Three;
 
-        public MenuItem AddItemPath(string text, string iconName, string accelerator = null)
-        {
-            var item = new MenuItem(this);
-            item.Text = text;
-            item.Padding = Padding.Three;
-            if (!String.IsNullOrWhiteSpace(iconName))
-                item.SetImage(iconName, ImageAlign.Left | ImageAlign.CenterV);
-            if (!String.IsNullOrWhiteSpace(accelerator))
-                item.SetAccelerator(accelerator);
+		OnAddItem(item);
+	}
+	public MenuItem AddItemPath(string text) {
+		return AddItemPath(text, String.Empty);
+	}
 
-            AddItemPath(item);
-            return item;
-        }
+	public MenuItem AddItemPath(string text, string iconName, string accelerator = "") {
+		MenuItem item = new(this) {
+			Text = text,
+			Padding = Padding.Three
+		};
+		if(!String.IsNullOrWhiteSpace(iconName))
+			item.SetImage(iconName, ImageAlign.Left | ImageAlign.CenterV);
+		if(!String.IsNullOrWhiteSpace(accelerator))
+			item.SetAccelerator(accelerator);
 
-        public void AddItemPath(MenuItem item)
-        {
+		AddItemPath(item);
+		return item;
+	}
 
-            string[] path = item.Text.Split('\\', '/');
-            Menu m = this;
-            for (int i = 0; i < path.Length - 1; i++)
-            {
-                MenuItem[] items = m.FindItems(path[i]);
-                if (items.Length == 0)
-                {
-                    m = m.AddItem(path[i]).Menu;
-                }
-                else if (items.Length == 1)
-                {
-                    m = items[0].Menu;
-                }
-                else
-                {
-                    for (int j = 0; j < items.Length; j++)
-                    {
-                        if (items[j].Parent == m) m = items[j].Menu;
-                    }
-                }
-            }
-            item.Text = path.Last();
-            m.AddItem(item);
-        }
+	public void AddItemPath(MenuItem item) {
 
-        /// <summary>
-        /// Add item handler.
-        /// </summary>
-        /// <param name="item">Item added.</param>
-        protected virtual void OnAddItem(MenuItem item)
-        {
-            item.TextPadding = new Padding(IconMarginDisabled ? 0 : 24, 0, 16, 0);
-            item.Alignment = Alignment.CenterV | Alignment.Left;
-            item.HoverEnter += OnHoverItem;
-        }
+		string[] path = item.Text.Split('\\', '/');
+		Menu m = this;
+		for(int i = 0; i < path.Length - 1; i++) {
+			MenuItem[] items = m.FindItems(path[i]);
+			if(items.Length == 0) {
+				m = m.AddItem(path[i]).Menu;
+			} else if(items.Length == 1) {
+				m = items[0].Menu;
+			} else {
+				for(int j = 0; j < items.Length; j++) {
+					if(items[j].Parent == m) m = items[j].Menu;
+				}
+			}
+		}
+		item.Text = path.Last();
+		m.AddItem(item);
+	}
 
-        /// <summary>
-        /// Closes all submenus.
-        /// </summary>
-        public virtual void CloseAll()
-        {
-            foreach (var child in Children)
-            {
-                if (child is MenuItem)
-                    (child as MenuItem).CloseMenu();
-            }
-        }
+	/// <summary>
+	/// Add item handler.
+	/// </summary>
+	/// <param name="item">Item added.</param>
+	protected virtual void OnAddItem(MenuItem item) {
+		item.TextPadding = new Padding(IconMarginDisabled ? 0 : 24, 0, 16, 0);
+		item.Alignment = Alignment.CenterV | Alignment.Left;
+		item.HoverEnter += OnHoverItem;
+	}
 
-        /// <summary>
-        /// Indicates whether any (sub)menu is open.
-        /// </summary>
-        /// <returns></returns>
-        public virtual bool IsMenuOpen()
-        {
-            return Children.Any(child => { if (child is MenuItem) return (child as MenuItem).IsMenuOpen; return false; });
-        }
+	/// <summary>
+	/// Closes all submenus.
+	/// </summary>
+	public virtual void CloseAll() {
+		foreach(var child in Children) {
+			if(child is MenuItem menuItem)
+				menuItem.CloseMenu();
+		}
+	}
 
-        /// <summary>
-        /// Mouse hover handler.
-        /// </summary>
-        /// <param name="control">Event source.</param>
-		protected virtual void OnHoverItem(ControlBase control, EventArgs args)
-        {
-            if (!ShouldHoverOpenMenu) return;
+	/// <summary>
+	/// Indicates whether any (sub)menu is open.
+	/// </summary>
+	/// <returns></returns>
+	public virtual bool IsMenuOpen() {
+		return Children.Any(child => { if(child is MenuItem menuItem) return menuItem.IsMenuOpen; return false; });
+	}
 
-            MenuItem item = control as MenuItem;
-            if (null == item) return;
-            if (item.IsMenuOpen) return;
+	/// <summary>
+	/// Mouse hover handler.
+	/// </summary>
+	/// <param name="control">Event source.</param>
+	protected virtual void OnHoverItem(ControlBase control, EventArgs args) {
+		if(!ShouldHoverOpenMenu) return;
 
-            CloseAll();
-            item.OpenMenu();
-        }
+		if(control is not MenuItem item) return;
+		if(item.IsMenuOpen) return;
 
-        /// <summary>
-        /// Closes the current menu.
-        /// </summary>
-        public virtual void Close()
-        {
-            IsCollapsed = true;
-            if (DeleteOnClose)
-            {
-                DelayedDelete();
-            }
-        }
-        /// <summary>
-        /// Finds all items by name in current menu.
-        /// </summary>
-	    public MenuItem[] FindItems(string name)
-        {
-            List<MenuItem> mi = new List<MenuItem>();
-            for (int i = 0; i < Children.Count; i++)
-            {
-                if (Children[i] as MenuItem != null)
-                {
-                    if (((MenuItem)Children[i]).Text == name)
-                        mi.Add(Children[i] as MenuItem);
-                }
-            }
-            return mi.ToArray();
-        }
+		CloseAll();
+		item.OpenMenu();
+	}
 
-        /// <summary>
-        /// Closes all submenus and the current menu.
-        /// </summary>
-        public override void CloseMenus()
-        {
-            base.CloseMenus();
-            CloseAll();
-            Close();
-        }
+	/// <summary>
+	/// Closes the current menu.
+	/// </summary>
+	public virtual void Close() {
+		IsCollapsed = true;
+		if(DeleteOnClose) {
+			DelayedDelete();
+		}
+	}
+	/// <summary>
+	/// Finds all items by name in current menu.
+	/// </summary>
+	public MenuItem[] FindItems(string name) {
+		List<MenuItem> mi = new();
+		for(int i = 0; i < Children.Count; i++) {
+			if(Children[i]is MenuItem menuItem) {
+				if(menuItem.Text == name)
+					mi.Add(menuItem);
+			}
+		}
+		return mi.ToArray();
+	}
 
-        /// <summary>
-        /// Adds a divider menu item.
-        /// </summary>
-        public virtual void AddDivider()
-        {
-            MenuDivider divider = new MenuDivider(this);
-            divider.Margin = new Margin(IconMarginDisabled ? 0 : 24, 0, 4, 0);
-        }
+	/// <summary>
+	/// Closes all submenus and the current menu.
+	/// </summary>
+	public override void CloseMenus() {
+		base.CloseMenus();
+		CloseAll();
+		Close();
+	}
 
-        /// <summary>
-        /// Removes all items.
-        /// </summary>
-        public void RemoveAll()
-        {
-            m_Layout.DeleteAllChildren();
-        }
-    }
+	/// <summary>
+	/// Adds a divider menu item.
+	/// </summary>
+	public virtual void AddDivider() {
+		_ = new MenuDivider(this) {
+			Margin = new Margin(IconMarginDisabled ? 0 : 24, 0, 4, 0)
+		};
+	}
+
+	/// <summary>
+	/// Removes all items.
+	/// </summary>
+	public void RemoveAll() {
+		layout.DeleteAllChildren();
+	}
 }

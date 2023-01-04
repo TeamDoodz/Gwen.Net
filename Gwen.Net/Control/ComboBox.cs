@@ -1,127 +1,110 @@
 ﻿using System;
 using Gwen.Net.Control.Internal;
 
-namespace Gwen.Net.Control
-{
-    /// <summary>
-    /// ComboBox control.
-    /// </summary>
-    [Xml.XmlControl(CustomHandler = "XmlElementHandler")]
-    public class ComboBox : ComboBoxBase
-    {
-        private readonly Button m_Button;
-        private readonly DownArrow m_DownArrow;
+namespace Gwen.Net.Control;
 
-        internal bool IsDepressed { get { return m_Button.IsDepressed; } }
-        public override bool IsHovered { get { return m_Button.IsHovered; } }
+/// <summary>
+/// ComboBox control.
+/// </summary>
+[Xml.XmlControl(CustomHandler = "XmlElementHandler")]
+public class ComboBox : ComboBoxBase {
+	private readonly Button button;
+	private readonly DownArrow downArrow;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ComboBox"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public ComboBox(ControlBase parent)
-            : base(parent)
-        {
-            m_Button = new Button(this);
-            m_Button.Alignment = Alignment.Left | Alignment.CenterV;
-            m_Button.Text = String.Empty;
-            m_Button.TextPadding = Padding.Three;
-            m_Button.Clicked += OnClicked;
+	internal bool IsDepressed { get { return button.IsDepressed; } }
+	public override bool IsHovered { get { return button.IsHovered; } }
 
-            m_DownArrow = new DownArrow(this);
+	/// <summary>
+	/// Initializes a new instance of the <see cref="ComboBox"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	public ComboBox(ControlBase? parent)
+		: base(parent) {
+		button = new Button(this);
+		button.Alignment = Alignment.Left | Alignment.CenterV;
+		button.Text = String.Empty;
+		button.TextPadding = Padding.Three;
+		button.Clicked += OnClicked;
 
-            IsTabable = true;
-            KeyboardInputEnabled = true;
-        }
+		downArrow = new DownArrow(this);
 
-        /// <summary>
-        /// Internal Pressed implementation.
-        /// </summary>
-        private void OnClicked(ControlBase sender, ClickedEventArgs args)
-        {
-            if (IsOpen)
-            {
-                Close();
-            }
-            else
-            {
-                Open();
-            }
-        }
+		IsTabable = true;
+		KeyboardInputEnabled = true;
+	}
 
-        /// <summary>
-        /// Removes all items.
-        /// </summary>
-        public override void RemoveAll()
-        {
-            m_Button.Text = String.Empty;
-            base.RemoveAll();
-        }
+	/// <summary>
+	/// Internal Pressed implementation.
+	/// </summary>
+	private void OnClicked(ControlBase sender, ClickedEventArgs args) {
+		if(IsOpen) {
+			Close();
+		} else {
+			Open();
+		}
+	}
 
-        /// <summary>
-        /// Internal handler for item selected event.
-        /// </summary>
-        /// <param name="control">Event source.</param>
-        protected override void OnItemSelected(ControlBase control, ItemSelectedEventArgs args)
-        {
-            if (!IsDisabled)
-            {
-                MenuItem item = control as MenuItem;
-                if (null == item) return;
+	/// <summary>
+	/// Removes all items.
+	/// </summary>
+	public override void RemoveAll() {
+		button.Text = String.Empty;
+		base.RemoveAll();
+	}
 
-                m_Button.Text = item.Text;
-            }
+	/// <summary>
+	/// Internal handler for item selected event.
+	/// </summary>
+	/// <param name="control">Event source.</param>
+	protected override void OnItemSelected(ControlBase control, ItemSelectedEventArgs args) {
+		if(!IsDisabled) {
+			if(control is not MenuItem item) return;
 
-            base.OnItemSelected(control, args);
-        }
+			button.Text = item.Text;
+		}
 
-        protected override Size Measure(Size availableSize)
-        {
-            return Size.Max(m_Button.DoMeasure(availableSize), m_DownArrow.DoMeasure(availableSize));
-        }
+		base.OnItemSelected(control, args);
+	}
 
-        protected override Size Arrange(Size finalSize)
-        {
-            m_Button.DoArrange(new Rectangle(Point.Zero, finalSize));
+	protected override Size Measure(Size availableSize) {
+		return Size.Max(button.DoMeasure(availableSize), downArrow.DoMeasure(availableSize));
+	}
 
-            m_DownArrow.DoArrange(new Rectangle(finalSize.Width - m_Button.TextPadding.Right - m_DownArrow.MeasuredSize.Width, (finalSize.Height - m_DownArrow.MeasuredSize.Height) / 2, m_DownArrow.MeasuredSize.Width, m_DownArrow.MeasuredSize.Height));
+	protected override Size Arrange(Size finalSize) {
+		button.DoArrange(new Rectangle(Point.Zero, finalSize));
 
-            return finalSize;
-        }
+		downArrow.DoArrange(new Rectangle(finalSize.Width - button.TextPadding.Right - downArrow.MeasuredSize.Width, (finalSize.Height - downArrow.MeasuredSize.Height) / 2, downArrow.MeasuredSize.Width, downArrow.MeasuredSize.Height));
 
-        /// <summary>
-        /// Renders the control using specified skin.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void Render(Skin.SkinBase skin)
-        {
-            skin.DrawComboBox(this, m_Button.IsDepressed, IsOpen);
-        }
+		return finalSize;
+	}
 
-        /// <summary>
-        /// Renders the focus overlay.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void RenderFocus(Skin.SkinBase skin)
-        {
+	/// <summary>
+	/// Renders the control using specified skin.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void Render(Skin.SkinBase skin) {
+		skin.DrawComboBox(this, button.IsDepressed, IsOpen);
+	}
 
-        }
+	/// <summary>
+	/// Renders the focus overlay.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void RenderFocus(Skin.SkinBase skin) {
 
-        internal static ControlBase XmlElementHandler(Xml.Parser parser, Type type, ControlBase parent)
-        {
-            ComboBox element = new ComboBox(parent);
-            parser.ParseAttributes(element);
-            if (parser.MoveToContent())
-            {
-                foreach (string elementName in parser.NextElement())
-                {
-                    if (elementName == "Option")
-                    {
-                        element.AddItem(parser.ParseElement<MenuItem>(element));
-                    }
-                }
-            }
-            return element;
-        }
-    }
+	}
+
+	internal static ControlBase XmlElementHandler(Xml.Parser parser, Type type, ControlBase parent) {
+		ComboBox element = new ComboBox(parent);
+		parser.ParseAttributes(element);
+		if(parser.MoveToContent()) {
+			foreach(string elementName in parser.NextElement()) {
+				if(elementName == "Option") {
+					if(parser.ParseElement<MenuItem>(element) is MenuItem item) {
+						element.AddItem(item);
+					}
+				}
+			}
+		}
+		return element;
+	}
 }

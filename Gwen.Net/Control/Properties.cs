@@ -1,125 +1,113 @@
 ﻿using System;
 using Gwen.Net.Control.Internal;
 
-namespace Gwen.Net.Control
-{
-    /// <summary>
-    /// Properties table.
-    /// </summary>
-    public class Properties : ContentControl
-    {
-        private readonly SplitterBar m_SplitterBar;
-        private int m_LabelWidth;
+namespace Gwen.Net.Control;
 
-        internal const int DefaultLabelWidth = 80;
+/// <summary>
+/// Properties table.
+/// </summary>
+public class Properties : ContentControl {
+	private readonly SplitterBar splitterBar;
+	private int labelWidth;
 
-        /// <summary>
-        /// Width of the first column (property names).
-        /// </summary>
-        internal int LabelWidth { get { return m_LabelWidth; } set { if (value == m_LabelWidth) return; m_LabelWidth = value; Invalidate(); } }
+	internal const int DEFAULT_LABEL_WIDTH = 80;
 
-        /// <summary>
-        /// Invoked when a property value has been changed.
-        /// </summary>
-		public event GwenEventHandler<EventArgs> ValueChanged;
+	/// <summary>
+	/// Width of the first column (property names).
+	/// </summary>
+	internal int LabelWidth { get { return labelWidth; } set { if(value == labelWidth) return; labelWidth = value; Invalidate(); } }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Properties"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public Properties(ControlBase parent)
-            : base(parent)
-        {
-            m_SplitterBar = new SplitterBar(this);
-            m_SplitterBar.Width = 3;
-            m_SplitterBar.Cursor = Cursor.SizeWE;
-            m_SplitterBar.Dragged += OnSplitterMoved;
-            m_SplitterBar.ShouldDrawBackground = false;
+	/// <summary>
+	/// Invoked when a property value has been changed.
+	/// </summary>
+	public event GwenEventHandler<EventArgs>? ValueChanged;
 
-            m_LabelWidth = DefaultLabelWidth;
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Properties"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	public Properties(ControlBase? parent)
+		: base(parent) {
+		splitterBar = new SplitterBar(this);
+		splitterBar.Width = 3;
+		splitterBar.Cursor = Cursor.SizeWE;
+		splitterBar.Dragged += OnSplitterMoved;
+		splitterBar.ShouldDrawBackground = false;
 
-            m_InnerPanel = new Layout.VerticalLayout(this);
-        }
+		labelWidth = DEFAULT_LABEL_WIDTH;
 
-        protected override Size Measure(Size availableSize)
-        {
-            availableSize -= Padding;
+		innerPanel = new Layout.VerticalLayout(this);
+	}
 
-            Size size = m_InnerPanel.DoMeasure(availableSize);
+	protected override Size Measure(Size availableSize) {
+		availableSize -= Padding;
 
-            m_SplitterBar.DoMeasure(new Size(availableSize.Width, size.Height));
+		Size size = innerPanel?.DoMeasure(availableSize) ?? Size.One;
 
-            return size + Padding;
-        }
+		splitterBar.DoMeasure(new Size(availableSize.Width, size.Height));
 
-        protected override Size Arrange(Size finalSize)
-        {
-            finalSize -= Padding;
+		return size + Padding;
+	}
 
-            m_InnerPanel.DoArrange(Padding.Left, Padding.Top, finalSize.Width, finalSize.Height);
+	protected override Size Arrange(Size finalSize) {
+		finalSize -= Padding;
 
-            m_SplitterBar.DoArrange(Padding.Left + m_LabelWidth - 2, Padding.Top, m_SplitterBar.MeasuredSize.Width, m_InnerPanel.MeasuredSize.Height);
+		innerPanel?.DoArrange(Padding.Left, Padding.Top, finalSize.Width, finalSize.Height);
 
-            return new Size(finalSize.Width, m_InnerPanel.MeasuredSize.Height) + Padding;
-        }
+		splitterBar.DoArrange(Padding.Left + labelWidth - 2, Padding.Top, splitterBar.MeasuredSize.Width, innerPanel?.MeasuredSize.Height ?? 1);
 
-        /// <summary>
-        /// Handles the splitter moved event.
-        /// </summary>
-        /// <param name="control">Event source.</param>
-        protected virtual void OnSplitterMoved(ControlBase control, EventArgs args)
-        {
-            LabelWidth = m_SplitterBar.ActualLeft - Padding.Left;
+		return new Size(finalSize.Width, innerPanel?.MeasuredSize.Height ?? 1) + Padding;
+	}
 
-            PropertyTreeNode node = Parent as PropertyTreeNode;
-            if (node != null)
-            {
-                node.PropertyTree.LabelWidth = LabelWidth;
-            }
-        }
+	/// <summary>
+	/// Handles the splitter moved event.
+	/// </summary>
+	/// <param name="control">Event source.</param>
+	protected virtual void OnSplitterMoved(ControlBase control, EventArgs args) {
+		LabelWidth = splitterBar.ActualLeft - Padding.Left;
 
-        /// <summary>
-        /// Adds a new text property row.
-        /// </summary>
-        /// <param name="label">Property name.</param>
-        /// <param name="value">Initial value.</param>
-        /// <returns>Newly created row.</returns>
-        public PropertyRow Add(string label, string value = "")
-        {
-            return Add(label, new Property.Text(this), value);
-        }
+		if(Parent is PropertyTreeNode node) {
+			node.PropertyTree.LabelWidth = LabelWidth;
+		}
+	}
 
-        /// <summary>
-        /// Adds a new property row.
-        /// </summary>
-        /// <param name="label">Property name.</param>
-        /// <param name="prop">Property control.</param>
-        /// <param name="value">Initial value.</param>
-        /// <returns>Newly created row.</returns>
-        public PropertyRow Add(string label, Property.PropertyBase prop, string value = "")
-        {
-            PropertyRow row = new PropertyRow(this, prop);
-            row.Label = label;
-            row.ValueChanged += OnRowValueChanged;
+	/// <summary>
+	/// Adds a new text property row.
+	/// </summary>
+	/// <param name="label">Property name.</param>
+	/// <param name="value">Initial value.</param>
+	/// <returns>Newly created row.</returns>
+	public PropertyRow Add(string label, string value = "") {
+		return Add(label, new Property.Text(this), value);
+	}
 
-            prop.SetValue(value, true);
+	/// <summary>
+	/// Adds a new property row.
+	/// </summary>
+	/// <param name="label">Property name.</param>
+	/// <param name="prop">Property control.</param>
+	/// <param name="value">Initial value.</param>
+	/// <returns>Newly created row.</returns>
+	public PropertyRow Add(string label, Property.PropertyBase prop, string value = "") {
+		PropertyRow row = new PropertyRow(this, prop);
+		row.Label = label;
+		row.ValueChanged += OnRowValueChanged;
 
-            m_SplitterBar.BringToFront();
-            return row;
-        }
+		prop.SetValue(value, true);
 
-        private void OnRowValueChanged(ControlBase control, EventArgs args)
-        {
-            if (ValueChanged != null)
-                ValueChanged.Invoke(control, EventArgs.Empty);
-        }
+		splitterBar.BringToFront();
+		return row;
+	}
 
-        /// <summary>
-        /// Deletes all rows.
-        /// </summary>
-        public void DeleteAll()
-        {
-            m_InnerPanel.DeleteAllChildren();
-        }
-    }
+	private void OnRowValueChanged(ControlBase control, EventArgs args) {
+		if(ValueChanged != null)
+			ValueChanged.Invoke(control, EventArgs.Empty);
+	}
+
+	/// <summary>
+	/// Deletes all rows.
+	/// </summary>
+	public void DeleteAll() {
+		innerPanel?.DeleteAllChildren();
+	}
 }

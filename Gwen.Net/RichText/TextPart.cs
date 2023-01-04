@@ -1,86 +1,67 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Gwen.Net.RichText
-{
-    public class TextPart : Part
-    {
-        private string m_Text;
-        private Color? m_Color;
-        private Font m_Font;
+namespace Gwen.Net.RichText;
 
-        public string Text { get { return m_Text; } }
-        public Color? Color { get { return m_Color; } }
-        public Font Font { get { return m_Font; } protected set { m_Font = value; } }
+public class TextPart : Part {
+	private string text;
+	private Color? color;
+	private Font? font;
 
-        public TextPart(string text)
-        {
-            m_Text = text;
-            m_Color = null;
-        }
+	public string Text { get { return text; } }
+	public Color? Color { get { return color; } }
+	public Font? Font { get { return font; } protected set { font = value; } }
 
-        public TextPart(string text, Color color)
-        {
-            m_Text = text;
-            m_Color = color;
-        }
+	public TextPart(string text) {
+		this.text = text;
+		color = null;
+	}
 
-        public override string[] Split(ref Font font)
-        {
-            m_Font = font;
+	public TextPart(string text, Color color) {
+		this.text = text;
+		this.color = color;
+	}
 
-            return StringSplit(m_Text);
-        }
+	public override string[] Split(ref Font? font) {
+		this.font = font;
 
-        protected string[] StringSplit(string str)
-        {
-            List<string> strs = new List<string>();
-            int len = str.Length;
-            int index = 0;
-            int i;
+		return StringSplit(text);
+	}
 
-            while (index < len)
-            {
-                i = str.IndexOfAny(m_separator, index);
-                if (i == index)
-                {
-                    if (str[i] == ' ')
-                    {
-                        strs.Add(" ");
-                        while (index < len && str[index] == ' ')
-                            index++;
-                    }
-                    else
-                    {
-                        strs.Add("\n");
-                        index++;
-                        if (index < len && str[index - 1] == '\r' && str[index] == '\n')
-                            index++;
-                    }
-                }
-                else if (i != -1)
-                {
-                    if (str[i] == ' ')
-                    {
-                        strs.Add(str.Substring(index, i - index + 1));
-                        index = i + 1;
-                    }
-                    else
-                    {
-                        strs.Add(str.Substring(index, i - index));
-                        index = i;
-                    }
-                }
-                else
-                {
-                    strs.Add(str.Substring(index));
-                    break;
-                }
-            }
+	protected string[] StringSplit(string str) {
+		List<string> strs = new List<string>();
+		int len = str.Length;
+		int index = 0;
+		int i;
 
-            return strs.ToArray();
-        }
+		while(index < len) {
+			i = str.IndexOfAny(seperator, index);
+			if(i == index) {
+				if(str[i] == ' ') {
+					strs.Add(" ");
+					while(index < len && str[index] == ' ')
+						index++;
+				} else {
+					strs.Add("\n");
+					index++;
+					if(index < len && str[index - 1] == '\r' && str[index] == '\n')
+						index++;
+				}
+			} else if(i != -1) {
+				if(str[i] == ' ') {
+					strs.Add(str.Substring(index, i - index + 1));
+					index = i + 1;
+				} else {
+					strs.Add(str.Substring(index, i - index));
+					index = i;
+				}
+			} else {
+				strs.Add(str.Substring(index));
+				break;
+			}
+		}
 
-        private static readonly char[] m_separator = new char[] { ' ', '\n', '\r' };
-    }
+		return strs.ToArray();
+	}
+
+	private static readonly char[] seperator = new char[] { ' ', '\n', '\r' };
 }

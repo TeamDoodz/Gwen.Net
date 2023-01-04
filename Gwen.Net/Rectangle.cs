@@ -126,7 +126,7 @@ namespace Gwen.Net
             return rect1.X != rect2.X || rect1.Y != rect2.Y || rect1.Width != rect2.Width || rect1.Height != rect2.Height;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is Rectangle)
             {

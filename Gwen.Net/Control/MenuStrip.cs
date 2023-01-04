@@ -1,94 +1,84 @@
 ﻿using System;
-using Gwen.Net.Control.Layout;
 
-namespace Gwen.Net.Control
-{
-    /// <summary>
-    /// Menu strip.
-    /// </summary>
-	[Xml.XmlControl(CustomHandler = "XmlElementHandler")]
-    public class MenuStrip : Menu
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MenuStrip"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public MenuStrip(ControlBase parent)
-            : base(parent)
-        {
-            Collapse(false, false);
+namespace Gwen.Net.Control;
 
-            Padding = new Padding(5, 0, 0, 0);
-            IconMarginDisabled = true;
-            EnableScroll(true, false);
+/// <summary>
+/// Menu strip.
+/// </summary>
+[Xml.XmlControl(CustomHandler = "XmlElementHandler")]
+public class MenuStrip : Menu {
+	/// <summary>
+	/// Initializes a new instance of the <see cref="MenuStrip"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	public MenuStrip(ControlBase? parent)
+		: base(parent) {
+		Collapse(false, false);
 
-            this.HorizontalAlignment = HorizontalAlignment.Stretch;
-            this.VerticalAlignment = VerticalAlignment.Top;
+		Padding = new Padding(5, 0, 0, 0);
+		IconMarginDisabled = true;
+		EnableScroll(true, false);
 
-            m_Layout.Horizontal = true;
-            m_Layout.HorizontalAlignment = HorizontalAlignment.Left;
-            m_Layout.VerticalAlignment = VerticalAlignment.Stretch;
-        }
+		this.HorizontalAlignment = HorizontalAlignment.Stretch;
+		this.VerticalAlignment = VerticalAlignment.Top;
 
-        /// <summary>
-        /// Closes the current menu.
-        /// </summary>
-        public override void Close()
-        {
+		layout.Horizontal = true;
+		layout.HorizontalAlignment = HorizontalAlignment.Left;
+		layout.VerticalAlignment = VerticalAlignment.Stretch;
+	}
 
-        }
+	/// <summary>
+	/// Closes the current menu.
+	/// </summary>
+	public override void Close() {
 
-        /// <summary>
-        /// Renders under the actual control (shadows etc).
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void RenderUnder(Skin.SkinBase skin)
-        {
-        }
+	}
 
-        /// <summary>
-        /// Renders the control using specified skin.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void Render(Skin.SkinBase skin)
-        {
-            skin.DrawMenuStrip(this);
-        }
+	/// <summary>
+	/// Renders under the actual control (shadows etc).
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void RenderUnder(Skin.SkinBase skin) {
+	}
 
-        /// <summary>
-        /// Determines whether the menu should open on mouse hover.
-        /// </summary>
-        protected override bool ShouldHoverOpenMenu
-        {
-            get { return IsMenuOpen(); }
-        }
+	/// <summary>
+	/// Renders the control using specified skin.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void Render(Skin.SkinBase skin) {
+		skin.DrawMenuStrip(this);
+	}
 
-        /// <summary>
-        /// Add item handler.
-        /// </summary>
-        /// <param name="item">Item added.</param>
-        protected override void OnAddItem(MenuItem item)
-        {
-            item.TextPadding = new Padding(5, 0, 5, 0);
-            item.Padding = new Padding(4, 4, 4, 4);
-            item.HoverEnter += OnHoverItem;
-        }
+	/// <summary>
+	/// Determines whether the menu should open on mouse hover.
+	/// </summary>
+	protected override bool ShouldHoverOpenMenu {
+		get { return IsMenuOpen(); }
+	}
 
-        internal static ControlBase XmlElementHandler(Xml.Parser parser, Type type, ControlBase parent)
-        {
-            MenuStrip element = new MenuStrip(parent);
-            parser.ParseAttributes(element);
-            if (parser.MoveToContent())
-            {
-                foreach (string elementName in parser.NextElement())
-                {
-                    if (elementName == "MenuItem")
-                    {
-                        element.AddItem(parser.ParseElement<MenuItem>(element));
-                    }
-                }
-            }
-            return element;
-        }
-    }
+	/// <summary>
+	/// Add item handler.
+	/// </summary>
+	/// <param name="item">Item added.</param>
+	protected override void OnAddItem(MenuItem item) {
+		item.TextPadding = new Padding(5, 0, 5, 0);
+		item.Padding = new Padding(4, 4, 4, 4);
+		item.HoverEnter += OnHoverItem;
+	}
+
+	internal static ControlBase XmlElementHandler(Xml.Parser parser, Type type, ControlBase parent) {
+		MenuStrip element = new MenuStrip(parent);
+		parser.ParseAttributes(element);
+		if(parser.MoveToContent()) {
+			foreach(string elementName in parser.NextElement()) {
+				if(elementName == "MenuItem") {
+					MenuItem? item = parser.ParseElement<MenuItem>(element);
+					if(item != null) {
+						element.AddItem(item);
+					}
+				}
+			}
+		}
+		return element;
+	}
 }

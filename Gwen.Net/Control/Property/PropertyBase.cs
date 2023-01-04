@@ -18,12 +18,12 @@ namespace Gwen.Net.Control.Property
         /// <summary>
         /// Invoked when the property value has been changed.
         /// </summary>
-		public event GwenEventHandler<EventArgs> ValueChanged;
+		public event GwenEventHandler<EventArgs>? ValueChanged;
 
         /// <summary>
         /// Property value (todo: always string, which is ugly. do something about it).
         /// </summary>
-        public virtual string Value { get { return null; } set { SetValue(value, false); } }
+        public virtual string Value { get { return ""; } set { SetValue(value, false); } }
 
         /// <summary>
         /// Indicates whether the property value is being edited.

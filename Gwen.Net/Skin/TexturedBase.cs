@@ -1009,7 +1009,7 @@ namespace Gwen.Net.Skin
             bool skip = true;
             for (int i = 0; i < rect.Width * 0.5; i++)
             {
-                m_Renderer.DrawColor = Color.Black;
+                renderer.DrawColor = Color.Black;
                 if (!skip)
                 {
                     Renderer.DrawPixel(rect.X + (i * 2), rect.Y);

@@ -9,61 +9,61 @@ namespace Gwen.Net.Control;
 /// </summary>
 [Xml.XmlControl(ElementName = nameof(HSVColorPicker))]
 public class HSVColorPicker : ControlBase, IColorPicker {
-	private readonly ColorLerpBox m_LerpBox;
-	private readonly ColorSlider m_ColorSlider;
-	private readonly ColorDisplay m_Before;
-	private readonly ColorDisplay m_After;
-	private readonly NumericUpDown m_Red;
-	private readonly NumericUpDown m_Green;
-	private readonly NumericUpDown m_Blue;
+	private readonly ColorLerpBox lerpBox;
+	private readonly ColorSlider colorSlider;
+	private readonly ColorDisplay before;
+	private readonly ColorDisplay after;
+	private readonly NumericUpDown red;
+	private readonly NumericUpDown green;
+	private readonly NumericUpDown blue;
 
-	private bool m_enableDefaultColor;
+	private bool enableDefaultColor;
 
 	/// <summary>
 	/// Invoked when the selected color has changed.
 	/// </summary>
 	[Xml.XmlEvent]
-	public event GwenEventHandler<EventArgs> ColorChanged;
+	public event GwenEventHandler<EventArgs>? ColorChanged;
 
 	/// <summary>
 	/// The "before" color.
 	/// </summary>
 	[Xml.XmlProperty]
-	public Color DefaultColor { get { return m_Before.Color; } set { m_Before.Color = value; } }
+	public Color DefaultColor { get { return before.Color; } set { before.Color = value; } }
 
-	public Color SelectedColorRGB => m_LerpBox.SelectedColor.ToColor();
+	public Color SelectedColorRGB => lerpBox.SelectedColor.ToColor();
 
-	public HSV SelectedColorHSV => m_LerpBox.SelectedColor;
+	public HSV SelectedColorHSV => lerpBox.SelectedColor;
 
 	/// <summary>
 	/// Show / hide default color box
 	/// </summary>
 	[Xml.XmlProperty]
-	public bool EnableDefaultColor { get { return m_enableDefaultColor; } set { m_enableDefaultColor = value; UpdateChildControlVisibility(); } }
+	public bool EnableDefaultColor { get { return enableDefaultColor; } set { enableDefaultColor = value; UpdateChildControlVisibility(); } }
 	/// <summary>
 	/// Initializes a new instance of the <see cref="HSVColorPicker"/> class.
 	/// </summary>
 	/// <param name="parent">Parent control.</param>
-	public HSVColorPicker(ControlBase parent)
+	public HSVColorPicker(ControlBase? parent)
 		: base(parent) {
 		MouseInputEnabled = true;
 
 		int baseSize = BaseUnit;
 
-		m_LerpBox = new ColorLerpBox(this);
-		m_LerpBox.Margin = Margin.Two;
-		m_LerpBox.ColorChanged += ColorBoxChanged;
-		m_LerpBox.Dock = Dock.Fill;
+		lerpBox = new ColorLerpBox(this);
+		lerpBox.Margin = Margin.Two;
+		lerpBox.ColorChanged += ColorBoxChanged;
+		lerpBox.Dock = Dock.Fill;
 
 		ControlBase values = new VerticalLayout(this);
 		values.Dock = Dock.Right;
 		{
-			m_After = new ColorDisplay(values);
-			m_After.Size = new Size(baseSize * 5, baseSize * 2);
+			after = new ColorDisplay(values);
+			after.Size = new Size(baseSize * 5, baseSize * 2);
 
-			m_Before = new ColorDisplay(values);
-			m_Before.Margin = new Margin(2, 0, 2, 2);
-			m_Before.Size = new Size(baseSize * 5, baseSize * 2);
+			before = new ColorDisplay(values);
+			before.Margin = new Margin(2, 0, 2, 2);
+			before.Size = new Size(baseSize * 5, baseSize * 2);
 
 			GridLayout grid = new GridLayout(values);
 			grid.Margin = new Margin(2, 0, 2, 2);
@@ -74,11 +74,11 @@ public class HSVColorPicker : ControlBase, IColorPicker {
 					label.Text = "R: ";
 					label.Alignment = Alignment.Left | Alignment.CenterV;
 
-					m_Red = new NumericUpDown(grid);
-					m_Red.Min = 0;
-					m_Red.Max = 255;
-					m_Red.SelectAllOnFocus = true;
-					m_Red.ValueChanged += NumericTyped;
+					red = new NumericUpDown(grid);
+					red.Min = 0;
+					red.Max = 255;
+					red.SelectAllOnFocus = true;
+					red.ValueChanged += NumericTyped;
 				}
 
 				{
@@ -86,11 +86,11 @@ public class HSVColorPicker : ControlBase, IColorPicker {
 					label.Text = "G: ";
 					label.Alignment = Alignment.Left | Alignment.CenterV;
 
-					m_Green = new NumericUpDown(grid);
-					m_Green.Min = 0;
-					m_Green.Max = 255;
-					m_Green.SelectAllOnFocus = true;
-					m_Green.ValueChanged += NumericTyped;
+					green = new NumericUpDown(grid);
+					green.Min = 0;
+					green.Max = 255;
+					green.SelectAllOnFocus = true;
+					green.ValueChanged += NumericTyped;
 				}
 
 				{
@@ -98,19 +98,19 @@ public class HSVColorPicker : ControlBase, IColorPicker {
 					label.Text = "B: ";
 					label.Alignment = Alignment.Left | Alignment.CenterV;
 
-					m_Blue = new NumericUpDown(grid);
-					m_Blue.Min = 0;
-					m_Blue.Max = 255;
-					m_Blue.SelectAllOnFocus = true;
-					m_Blue.ValueChanged += NumericTyped;
+					blue = new NumericUpDown(grid);
+					blue.Min = 0;
+					blue.Max = 255;
+					blue.SelectAllOnFocus = true;
+					blue.ValueChanged += NumericTyped;
 				}
 			}
 		}
 
-		m_ColorSlider = new ColorSlider(this);
-		m_ColorSlider.Margin = Margin.Two;
-		m_ColorSlider.ColorChanged += ColorSliderChanged;
-		m_ColorSlider.Dock = Dock.Right;
+		colorSlider = new ColorSlider(this);
+		colorSlider.Margin = Margin.Two;
+		colorSlider.ColorChanged += ColorSliderChanged;
+		colorSlider.Dock = Dock.Right;
 
 		EnableDefaultColor = false;
 
@@ -118,37 +118,38 @@ public class HSVColorPicker : ControlBase, IColorPicker {
 	}
 
 	private void NumericTyped(ControlBase control, EventArgs args) {
-		NumericUpDown box = control as NumericUpDown;
-		if (box == null) return;
+		if(control is not NumericUpDown box) {
+			return;
+		}
 
 		int value = (int)box.Value;
-		if (value < 0) value = 0;
-		if (value > 255) value = 255;
+		if(value < 0) value = 0;
+		if(value > 255) value = 255;
 
 		Color selectedRgb = SelectedColorRGB;
 		Color newColor = selectedRgb;
 
-		if (box == m_Red)
+		if(box == red)
 			newColor = new Color(selectedRgb.A, value, selectedRgb.G, selectedRgb.B);
-		else if (box == m_Green)
+		else if(box == green)
 			newColor = new Color(selectedRgb.A, selectedRgb.R, value, selectedRgb.B);
-		else if (box == m_Blue)
+		else if(box == blue)
 			newColor = new Color(selectedRgb.A, selectedRgb.R, selectedRgb.G, value);
 		//else if (box.Name.Contains("Alpha"))
 		//    newColor = Color.FromArgb(textValue, SelectedColor.R, SelectedColor.G, SelectedColor.B);
 
-		m_ColorSlider.SetColor(newColor, false);
-		m_LerpBox.SetColor(newColor, false, false);
-		m_After.Color = newColor;
+		colorSlider.SetColor(newColor, false);
+		lerpBox.SetColor(newColor, false, false);
+		after.Color = newColor;
 
 		ColorChanged?.Invoke(this, EventArgs.Empty);
 	}
 
 	private void UpdateControls(Color color) {
-		m_Red.SetValue(color.R, false);
-		m_Green.SetValue(color.G, false);
-		m_Blue.SetValue(color.B, false);
-		m_After.Color = color;
+		red.SetValue(color.R, false);
+		green.SetValue(color.G, false);
+		blue.SetValue(color.B, false);
+		after.Color = color;
 	}
 
 	/// <summary>
@@ -160,14 +161,14 @@ public class HSVColorPicker : ControlBase, IColorPicker {
 	public void SetColor(Color color, bool onlyHue = false, bool reset = false) {
 		UpdateControls(color);
 
-		if (reset)
-			m_Before.Color = color;
+		if(reset)
+			before.Color = color;
 
-		m_ColorSlider.SetColor(color, false);
-		m_LerpBox.SetColor(color, onlyHue, false);
-		m_After.Color = color;
+		colorSlider.SetColor(color, false);
+		lerpBox.SetColor(color, onlyHue, false);
+		after.Color = color;
 
-		if (ColorChanged != null)
+		if(ColorChanged != null)
 			ColorChanged.Invoke(this, EventArgs.Empty);
 	}
 
@@ -175,29 +176,29 @@ public class HSVColorPicker : ControlBase, IColorPicker {
 		UpdateControls(SelectedColorRGB);
 		//Invalidate();
 
-		if (ColorChanged != null)
+		if(ColorChanged != null)
 			ColorChanged.Invoke(this, EventArgs.Empty);
 	}
 
 	private void ColorSliderChanged(ControlBase control, EventArgs args) {
-		m_LerpBox.SetColor(m_ColorSlider.SelectedColor, true, false);
+		lerpBox.SetColor(colorSlider.SelectedColor, true, false);
 		UpdateControls(SelectedColorRGB);
 		//Invalidate();
 
-		if (ColorChanged != null)
+		if(ColorChanged != null)
 			ColorChanged.Invoke(this, EventArgs.Empty);
 	}
 
 	private void UpdateChildControlVisibility() {
-		if (m_enableDefaultColor) {
-			m_After.Margin = new Margin(2, 2, 2, 0);
-			m_Before.Margin = new Margin(2, 0, 2, 2);
-			m_After.Height = BaseUnit * 2;
-			m_Before.Show();
+		if(enableDefaultColor) {
+			after.Margin = new Margin(2, 2, 2, 0);
+			before.Margin = new Margin(2, 0, 2, 2);
+			after.Height = BaseUnit * 2;
+			before.Show();
 		} else {
-			m_After.Margin = Margin.Two;
-			m_Before.Collapse();
-			m_After.Height = BaseUnit * 4;
+			after.Margin = Margin.Two;
+			before.Collapse();
+			after.Height = BaseUnit * 4;
 		}
 	}
 }

@@ -1,96 +1,79 @@
 ﻿using System;
-using Gwen.Net.Control;
 
-namespace Gwen.Net.Control.Internal
-{
-    public class ScrollArea : InnerContentControl
-    {
-        private bool m_CanScrollH;
-        private bool m_CanScrollV;
+namespace Gwen.Net.Control.Internal;
 
-        public ScrollArea(ControlBase parent)
-            : base(parent)
-        {
-            m_CanScrollV = true;
-            m_CanScrollH = true;
-        }
+public class ScrollArea : InnerContentControl {
+	private bool canScrollH;
+	private bool canScrollV;
 
-        public Size ViewableContentSize { get; private set; }
+	public ScrollArea(ControlBase parent)
+		: base(parent) {
+		canScrollV = true;
+		canScrollH = true;
+	}
 
-        public Size ContentSize { get { return new Size(m_InnerPanel.ActualWidth, m_InnerPanel.ActualHeight); } }
+	public Size ViewableContentSize { get; private set; }
 
-        public Point ScrollPosition
-        {
-            get { return m_InnerPanel.ActualPosition; }
-            set
-            {
-                SetScrollPosition(value.X, value.Y);
-            }
-        }
+	public Size ContentSize { get { return new Size(innerPanel?.ActualWidth ?? 1, innerPanel?.ActualHeight ?? 1); } }
 
-        public int VerticalScroll
-        {
-            get
-            {
-                return m_InnerPanel.ActualTop;
-            }
-            set
-            {
+	public Point ScrollPosition {
+		get { return innerPanel?.ActualPosition ?? Point.Zero; }
+		set {
+			SetScrollPosition(value.X, value.Y);
+		}
+	}
 
-                m_InnerPanel.SetPosition(Content.ActualLeft, value);
-            }
-        }
+	public int VerticalScroll {
+		get {
+			return innerPanel?.ActualTop ?? 0;
+		}
+		set {
+			innerPanel?.SetPosition(Content?.ActualLeft ?? 0, value);
+		}
+	}
 
-        public int HorizontalScroll
-        {
-            get
-            {
-                return m_InnerPanel.ActualLeft;
-            }
-            set
-            {
-                m_InnerPanel.SetPosition(value, m_InnerPanel.ActualTop);
-            }
-        }
+	public int HorizontalScroll {
+		get {
+			return innerPanel?.ActualLeft ?? 0;
+		}
+		set {
+			innerPanel?.SetPosition(value, innerPanel.ActualTop);
+		}
+	}
 
-        public virtual void EnableScroll(bool horizontal, bool vertical)
-        {
-            m_CanScrollV = vertical;
-            m_CanScrollH = horizontal;
-        }
+	public virtual void EnableScroll(bool horizontal, bool vertical) {
+		canScrollV = vertical;
+		canScrollH = horizontal;
+	}
 
-        public void SetScrollPosition(int horizontal, int vertical)
-        {
-            m_InnerPanel.SetPosition(horizontal, vertical);
-        }
+	public void SetScrollPosition(int horizontal, int vertical) {
+		innerPanel?.SetPosition(horizontal, vertical);
+	}
 
-        protected override Size Measure(Size availableSize)
-        {
-            if (m_InnerPanel == null)
-                return Size.Zero;
+	protected override Size Measure(Size availableSize) {
+		if(innerPanel == null)
+			return Size.Zero;
 
-            Size size = m_InnerPanel.DoMeasure(new Size(m_CanScrollH ? Util.Infinity : availableSize.Width, m_CanScrollV ? Util.Infinity : availableSize.Height));
+		Size size = innerPanel.DoMeasure(new Size(canScrollH ? Util.Infinity : availableSize.Width, canScrollV ? Util.Infinity : availableSize.Height));
 
-            // Let the parent determine the size if scrolling is enabled
-            size.Width = m_CanScrollH ? 0 : Math.Min(size.Width, availableSize.Width);
-            size.Height = m_CanScrollV ? 0 : Math.Min(size.Height, availableSize.Height);
+		// Let the parent determine the size if scrolling is enabled
+		size.Width = canScrollH ? 0 : Math.Min(size.Width, availableSize.Width);
+		size.Height = canScrollV ? 0 : Math.Min(size.Height, availableSize.Height);
 
-            return size;
-        }
+		return size;
+	}
 
-        protected override Size Arrange(Size finalSize)
-        {
-            if (m_InnerPanel == null)
-                return finalSize;
+	protected override Size Arrange(Size finalSize) {
+		if(innerPanel == null)
+			return finalSize;
 
-            int scrollAreaWidth = Math.Max(finalSize.Width, m_InnerPanel.MeasuredSize.Width);
-            int scrollAreaHeight = Math.Max(finalSize.Height, m_InnerPanel.MeasuredSize.Height);
+		int scrollAreaWidth = Math.Max(finalSize.Width, innerPanel.MeasuredSize.Width);
+		int scrollAreaHeight = Math.Max(finalSize.Height, innerPanel.MeasuredSize.Height);
 
-            m_InnerPanel.DoArrange(new Rectangle(0, 0, scrollAreaWidth, scrollAreaHeight));
+		innerPanel.DoArrange(new Rectangle(0, 0, scrollAreaWidth, scrollAreaHeight));
 
-            this.ViewableContentSize = new Size(finalSize.Width, finalSize.Height);
+		this.ViewableContentSize = new Size(finalSize.Width, finalSize.Height);
 
-            return finalSize;
-        }
-    }
+		return finalSize;
+	}
 }

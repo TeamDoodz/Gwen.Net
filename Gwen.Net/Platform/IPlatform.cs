@@ -37,7 +37,7 @@ namespace Gwen.Net.Platform
         IEnumerable<ISpecialFolder> GetSpecialFolders();
 
         string GetFileName(string path);
-        string GetDirectoryName(string path);
+        string? GetDirectoryName(string path);
 
         bool FileExists(string path);
         bool DirectoryExists(string path);

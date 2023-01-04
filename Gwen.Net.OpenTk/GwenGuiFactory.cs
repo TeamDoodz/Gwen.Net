@@ -1,18 +1,9 @@
-﻿using System.ComponentModel;
-using OpenTK.Windowing.Desktop;
+﻿using OpenTK.Windowing.Desktop;
 
-namespace Gwen.Net.OpenTk
-{
-    public static class GwenGuiFactory
-    {
-        public static IGwenGui CreateFromGame(GameWindow window, GwenGuiSettings settings = default)
-        {
-            if (settings == null)
-            {
-                settings = GwenGuiSettings.Default;
-            }
+namespace Gwen.Net.OpenTk;
 
-            return new GwenGui(window, settings);
-        }
-    }
+public static class GwenGuiFactory {
+	public static IGwenGui CreateFromGame(GameWindow window, GwenGuiSettings settings) {
+		return new GwenGui(window, settings);
+	}
 }

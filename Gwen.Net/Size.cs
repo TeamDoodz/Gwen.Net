@@ -60,7 +60,7 @@ public struct Size {
 		return new Size(size.Width - padding.Left - padding.Right, size.Height - padding.Top - padding.Bottom);
 	}
 
-	public override bool Equals(object obj) {
+	public override bool Equals(object? obj) {
 		if (obj is Size size) {
 			return size == this;
 		}

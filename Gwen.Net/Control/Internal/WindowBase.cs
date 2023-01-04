@@ -1,130 +1,129 @@
 ﻿using System;
 using System.Linq;
 
-namespace Gwen.Net.Control
-{
-    public enum StartPosition
-    {
-        CenterParent,
-        CenterCanvas,
-        Manual
-    }
+namespace Gwen.Net.Control {
+	public enum StartPosition {
+		CenterParent,
+		CenterCanvas,
+		Manual
+	}
 }
 
-namespace Gwen.Net.Control.Internal
-{
-    public abstract class WindowBase : ResizableControl
-    {
-        private bool m_DeleteOnClose;
-        private ControlBase m_RealParent;
-        private StartPosition m_StartPosition = StartPosition.Manual;
+namespace Gwen.Net.Control.Internal {
+	public abstract class WindowBase : ResizableControl {
+		private bool deleteOnClose;
+		private ControlBase? realParent;
+		private StartPosition startPosition = StartPosition.Manual;
 
-        protected Dragger m_DragBar;
+		protected Dragger? dragBar;
 
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> Closed;
+		[Xml.XmlEvent]
+		public event GwenEventHandler<EventArgs>? Closed;
 
-        /// <summary>
-        /// Is window draggable.
-        /// </summary>
-        [Xml.XmlProperty]
-        public bool IsDraggingEnabled { get { return m_DragBar.Target != null; } set { m_DragBar.Target = value ? this : null; } }
+		/// <summary>
+		/// Is window draggable.
+		/// </summary>/
+		[Xml.XmlProperty]
+		public bool IsDraggingEnabled { 
+			get => dragBar != null && dragBar.Target != null; 
+			set {
+				if(dragBar == null) {
+					return;
+				}
+				dragBar.Target = value ? this : null; 
+			} 
+		}
 
-        /// <summary>
-        /// Determines whether the control should be disposed on close.
-        /// </summary>
-        [Xml.XmlProperty]
-        public bool DeleteOnClose { get { return m_DeleteOnClose; } set { m_DeleteOnClose = value; } }
+		/// <summary>
+		/// Determines whether the control should be disposed on close.
+		/// </summary>
+		[Xml.XmlProperty]
+		public bool DeleteOnClose { get { return deleteOnClose; } set { deleteOnClose = value; } }
 
-        [Xml.XmlProperty]
-        public override Padding Padding { get { return m_InnerPanel.Padding; } set { m_InnerPanel.Padding = value; } }
+		[Xml.XmlProperty]
+		public override Padding Padding { 
+			get => innerPanel?.Padding ?? Padding.Zero;
+			set {
+				if(innerPanel != null) {
+					innerPanel.Padding = value;
+				}
+			} 
+		}
 
-        /// <summary>
-        /// Starting position of the window.
-        /// </summary>
-        [Xml.XmlProperty]
-        public StartPosition StartPosition { get { return m_StartPosition; } set { m_StartPosition = value; } }
+		/// <summary>
+		/// Starting position of the window.
+		/// </summary>
+		[Xml.XmlProperty]
+		public StartPosition StartPosition { get { return startPosition; } set { startPosition = value; } }
 
-        /// <summary>
-        /// Indicates whether the control is on top of its parent's children.
-        /// </summary>
-        public override bool IsOnTop
-        {
-            get { return Parent.Children.Where(x => x is Window).Last() == this; }
-        }
+		/// <summary>
+		/// Indicates whether the control is on top of its parent's children.
+		/// </summary>
+		public override bool IsOnTop {
+			get { return Parent?.Children.Where(x => x is WindowBase).Last() == this; }
+		}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WindowBase"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public WindowBase(ControlBase parent)
-            : base(parent.GetCanvas())
-        {
-            m_RealParent = parent;
+		/// <summary>
+		/// Initializes a new instance of the <see cref="WindowBase"/> class.
+		/// </summary>
+		/// <param name="parent">Parent control.</param>
+		public WindowBase(ControlBase? parent)
+			: base(parent?.GetCanvas() ?? null) {
+			realParent = parent;
 
-            EnableResizing();
-            BringToFront();
-            IsTabable = false;
-            Focus();
-            MinimumSize = new Size(100, 40);
-            ClampMovement = true;
-            KeyboardInputEnabled = false;
-            MouseInputEnabled = true;
-        }
+			EnableResizing();
+			BringToFront();
+			IsTabable = false;
+			Focus();
+			MinimumSize = new Size(100, 40);
+			ClampMovement = true;
+			KeyboardInputEnabled = false;
+			MouseInputEnabled = true;
+		}
 
-        public override void Show()
-        {
-            BringToFront();
-            base.Show();
-        }
+		public override void Show() {
+			BringToFront();
+			base.Show();
+		}
 
-        public virtual void Close()
-        {
-            IsCollapsed = true;
+		public virtual void Close() {
+			IsCollapsed = true;
 
-            if (m_DeleteOnClose)
-            {
-                Parent.RemoveChild(this, true);
-            }
+			if(deleteOnClose) {
+				Parent?.RemoveChild(this, true);
+			}
 
-            if (Closed != null)
-                Closed(this, EventArgs.Empty);
-        }
+			if(Closed != null)
+				Closed(this, EventArgs.Empty);
+		}
 
-        public override void Touch()
-        {
-            base.Touch();
-            BringToFront();
-        }
+		public override void Touch() {
+			base.Touch();
+			BringToFront();
+		}
 
-        protected virtual void OnDragged(ControlBase control, EventArgs args)
-        {
-            m_StartPosition = StartPosition.Manual;
-        }
+		protected virtual void OnDragged(ControlBase control, EventArgs args) {
+			startPosition = StartPosition.Manual;
+		}
 
-        protected override void OnResized(ControlBase control, EventArgs args)
-        {
-            m_StartPosition = StartPosition.Manual;
+		protected override void OnResized(ControlBase control, EventArgs args) {
+			startPosition = StartPosition.Manual;
 
-            base.OnResized(control, args);
-        }
+			base.OnResized(control, args);
+		}
 
-        public override bool SetBounds(int x, int y, int width, int height)
-        {
-            if (m_StartPosition == StartPosition.CenterCanvas)
-            {
-                ControlBase canvas = GetCanvas();
-                x = (canvas.ActualWidth - width) / 2;
-                y = (canvas.ActualHeight - height) / 2;
-            }
-            else if (m_StartPosition == StartPosition.CenterParent)
-            {
-                Point pt = m_RealParent.LocalPosToCanvas(new Point(m_RealParent.ActualWidth / 2, m_RealParent.ActualHeight / 2));
-                x = pt.X - width / 2;
-                y = pt.Y - height / 2;
-            }
+		public override bool SetBounds(int x, int y, int width, int height) {
+			if(startPosition == StartPosition.CenterCanvas) {
+				ControlBase canvas = GetCanvas();
+				x = (canvas.ActualWidth - width) / 2;
+				y = (canvas.ActualHeight - height) / 2;
+			} else if(startPosition == StartPosition.CenterParent) {
+				Point pt = realParent?.LocalPosToCanvas(new Point(realParent.ActualWidth / 2, realParent.ActualHeight / 2)) ?? Point.Zero;
+				x = pt.X - width / 2;
+				y = pt.Y - height / 2;
+			}
 
-            return base.SetBounds(x, y, width, height);
-        }
-    }
+			return base.SetBounds(x, y, width, height);
+		}
+	}
 }

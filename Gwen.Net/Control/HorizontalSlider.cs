@@ -1,57 +1,50 @@
 ﻿using System;
 using Gwen.Net.Control.Internal;
 
-namespace Gwen.Net.Control
-{
-    /// <summary>
-    /// Horizontal slider.
-    /// </summary>
-    [Xml.XmlControl]
-    public class HorizontalSlider : Slider
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HorizontalSlider"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public HorizontalSlider(ControlBase parent)
-            : base(parent)
-        {
-            Height = BaseUnit;
+namespace Gwen.Net.Control;
 
-            m_SliderBar.IsHorizontal = true;
-        }
+/// <summary>
+/// Horizontal slider.
+/// </summary>
+[Xml.XmlControl]
+public class HorizontalSlider : Slider {
+	/// <summary>
+	/// Initializes a new instance of the <see cref="HorizontalSlider"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	public HorizontalSlider(ControlBase? parent)
+		: base(parent) {
+		Height = BaseUnit;
 
-        protected override float CalculateValue()
-        {
-            return (float)m_SliderBar.ActualLeft / (ActualWidth - m_SliderBar.ActualWidth);
-        }
+		sliderBar.IsHorizontal = true;
+	}
 
-        protected override void UpdateBarFromValue()
-        {
-            m_SliderBar.MoveTo((int)((ActualWidth - m_SliderBar.ActualWidth) * (m_Value)), (this.ActualHeight - m_SliderBar.ActualHeight) / 2);
-        }
+	protected override float CalculateValue() {
+		return (float)sliderBar.ActualLeft / (ActualWidth - sliderBar.ActualWidth);
+	}
 
-        /// <summary>
-        /// Handler invoked on mouse click (left) event.
-        /// </summary>
-        /// <param name="x">X coordinate.</param>
-        /// <param name="y">Y coordinate.</param>
-        /// <param name="down">If set to <c>true</c> mouse button is down.</param>
-        protected override void OnMouseClickedLeft(int x, int y, bool down)
-        {
-            base.OnMouseClickedLeft(x, y, down);
-            m_SliderBar.MoveTo((int)(CanvasPosToLocal(new Point(x, y)).X - m_SliderBar.ActualWidth / 2), (this.ActualHeight - m_SliderBar.ActualHeight) / 2);
-            m_SliderBar.InputMouseClickedLeft(x, y, down);
-            OnMoved(m_SliderBar, EventArgs.Empty);
-        }
+	protected override void UpdateBarFromValue() {
+		sliderBar.MoveTo((int)((ActualWidth - sliderBar.ActualWidth) * (value)), (this.ActualHeight - sliderBar.ActualHeight) / 2);
+	}
 
-        /// <summary>
-        /// Renders the control using specified skin.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void Render(Skin.SkinBase skin)
-        {
-            skin.DrawSlider(this, true, m_SnapToNotches ? m_NotchCount : 0, m_SliderBar.ActualWidth);
-        }
-    }
+	/// <summary>
+	/// Handler invoked on mouse click (left) event.
+	/// </summary>
+	/// <param name="x">X coordinate.</param>
+	/// <param name="y">Y coordinate.</param>
+	/// <param name="down">If set to <c>true</c> mouse button is down.</param>
+	protected override void OnMouseClickedLeft(int x, int y, bool down) {
+		base.OnMouseClickedLeft(x, y, down);
+		sliderBar.MoveTo((int)(CanvasPosToLocal(new Point(x, y)).X - sliderBar.ActualWidth / 2), (this.ActualHeight - sliderBar.ActualHeight) / 2);
+		sliderBar.InputMouseClickedLeft(x, y, down);
+		OnMoved(sliderBar, EventArgs.Empty);
+	}
+
+	/// <summary>
+	/// Renders the control using specified skin.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void Render(Skin.SkinBase skin) {
+		skin.DrawSlider(this, true, snapToNotches ? notchCount : 0, sliderBar.ActualWidth);
+	}
 }

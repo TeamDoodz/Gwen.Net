@@ -1,132 +1,122 @@
 ﻿using System;
 using Gwen.Net.Control.Internal;
 
-namespace Gwen.Net.Control
-{
-    /// <summary>
-    /// Single property row.
-    /// </summary>
-    public class PropertyRow : ControlBase
-    {
-        private readonly Label m_Label;
-        private readonly Property.PropertyBase m_Property;
-        private bool m_LastEditing;
-        private bool m_LastHover;
+namespace Gwen.Net.Control;
 
-        /// <summary>
-        /// Invoked when the property value has changed.
-        /// </summary>
-        public event GwenEventHandler<EventArgs> ValueChanged;
+/// <summary>
+/// Single property row.
+/// </summary>
+public class PropertyRow : ControlBase {
+	private readonly Label label;
+	private readonly Property.PropertyBase? property;
+	private bool lastEditing;
+	private bool lastHover;
 
-        /// <summary>
-        /// Indicates whether the property value is being edited.
-        /// </summary>
-        public bool IsEditing { get { return m_Property != null && m_Property.IsEditing; } }
+	/// <summary>
+	/// Invoked when the property value has changed.
+	/// </summary>
+	public event GwenEventHandler<EventArgs>? ValueChanged;
 
-        /// <summary>
-        /// Property value.
-        /// </summary>
-        public string Value { get { return m_Property.Value; } set { m_Property.Value = value; } }
+	/// <summary>
+	/// Indicates whether the property value is being edited.
+	/// </summary>
+	public bool IsEditing => property != null && property.IsEditing;
 
-        /// <summary>
-        /// Indicates whether the control is hovered by mouse pointer.
-        /// </summary>
-        public override bool IsHovered
-        {
-            get
-            {
-                return base.IsHovered || (m_Property != null && m_Property.IsHovered);
-            }
-        }
+	/// <summary>
+	/// Property value.
+	/// </summary>
+	public string Value { 
+		get => property?.Value ?? "";
+		set {
+			if(property != null) {
+				property.Value = value;
+			}
+		} 
+	}
 
-        /// <summary>
-        /// Property name.
-        /// </summary>
-        public string Label { get { return m_Label.Text; } set { m_Label.Text = value; } }
+	/// <summary>
+	/// Indicates whether the control is hovered by mouse pointer.
+	/// </summary>
+	public override bool IsHovered {
+		get {
+			return base.IsHovered || (property != null && property.IsHovered);
+		}
+	}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyRow"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        /// <param name="prop">Property control associated with this row.</param>
-        public PropertyRow(ControlBase parent, Property.PropertyBase prop)
-            : base(parent)
-        {
-            Padding = new Padding(2, 2, 2, 2);
+	/// <summary>
+	/// Property name.
+	/// </summary>
+	public string Label { get { return label.Text; } set { label.Text = value; } }
 
-            m_Label = new PropertyRowLabel(this);
-            m_Label.Alignment = Alignment.Left | Alignment.Top;
+	/// <summary>
+	/// Initializes a new instance of the <see cref="PropertyRow"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	/// <param name="prop">Property control associated with this row.</param>
+	public PropertyRow(ControlBase? parent, Property.PropertyBase prop)
+		: base(parent) {
+		Padding = new Padding(2, 2, 2, 2);
 
-            m_Property = prop;
-            m_Property.Parent = this;
-            m_Property.ValueChanged += OnValueChanged;
-        }
+		label = new PropertyRowLabel(this);
+		label.Alignment = Alignment.Left | Alignment.Top;
 
-        /// <summary>
-        /// Renders the control using specified skin.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void Render(Skin.SkinBase skin)
-        {
-            /* SORRY */
-            if (IsEditing != m_LastEditing)
-            {
-                OnEditingChanged();
-                m_LastEditing = IsEditing;
-            }
+		property = prop;
+		property.Parent = this;
+		property.ValueChanged += OnValueChanged;
+	}
 
-            if (IsHovered != m_LastHover)
-            {
-                OnHoverChanged();
-                m_LastHover = IsHovered;
-            }
-            /* SORRY */
+	/// <summary>
+	/// Renders the control using specified skin.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void Render(Skin.SkinBase skin) {
+		/* SORRY */
+		if(IsEditing != lastEditing) {
+			OnEditingChanged();
+			lastEditing = IsEditing;
+		}
 
-            skin.DrawPropertyRow(this, m_Label.ActualRight, IsEditing, IsHovered | m_Property.IsHovered);
-        }
+		if(IsHovered != lastHover) {
+			OnHoverChanged();
+			lastHover = IsHovered;
+		}
+		/* SORRY */
 
-        protected override Size Measure(Size availableSize)
-        {
-            Properties parent = Parent as Properties;
-            if (parent != null)
-            {
-                Size labelSize = m_Label.DoMeasure(new Size(parent.LabelWidth - Padding.Left - Padding.Right, availableSize.Height)) + Padding;
-                Size propertySize = m_Property.DoMeasure(new Size(availableSize.Width - parent.LabelWidth, availableSize.Height)) + Padding;
+		skin.DrawPropertyRow(this, label.ActualRight, IsEditing, IsHovered | property?.IsHovered ?? false);
+	}
 
-                return new Size(labelSize.Width + propertySize.Width, Math.Max(labelSize.Height, propertySize.Height));
-            }
+	protected override Size Measure(Size availableSize) {
+		if(Parent is Properties parent) {
+			Size labelSize = label.DoMeasure(new Size(parent.LabelWidth - Padding.Left - Padding.Right, availableSize.Height)) + Padding;
+			Size propertySize = property?.DoMeasure(new Size(availableSize.Width - parent.LabelWidth, availableSize.Height)) ?? Size.One + Padding;
 
-            return Size.Zero;
-        }
+			return new Size(labelSize.Width + propertySize.Width, Math.Max(labelSize.Height, propertySize.Height));
+		}
 
-        protected override Size Arrange(Size finalSize)
-        {
-            Properties parent = Parent as Properties;
-            if (parent != null)
-            {
-                m_Label.DoArrange(new Rectangle(Padding.Left, Padding.Top, parent.LabelWidth - Padding.Left - Padding.Right, m_Label.MeasuredSize.Height));
-                m_Property.DoArrange(new Rectangle(parent.LabelWidth + Padding.Left, Padding.Top, finalSize.Width - parent.LabelWidth - Padding.Left - Padding.Right, m_Property.MeasuredSize.Height));
+		return Size.Zero;
+	}
 
-                return new Size(finalSize.Width, Math.Max(m_Label.MeasuredSize.Height, m_Property.MeasuredSize.Height) + Padding.Top + Padding.Bottom);
-            }
+	protected override Size Arrange(Size finalSize) {
+		if(Parent is Properties parent) {
+			label.DoArrange(new Rectangle(Padding.Left, Padding.Top, parent.LabelWidth - Padding.Left - Padding.Right, label.MeasuredSize.Height));
+			property?.DoArrange(new Rectangle(parent.LabelWidth + Padding.Left, Padding.Top, finalSize.Width - parent.LabelWidth - Padding.Left - Padding.Right, property.MeasuredSize.Height));
 
-            return Size.Zero;
-        }
+			return new Size(finalSize.Width, Math.Max(label.MeasuredSize.Height, property?.MeasuredSize.Height ?? 1) + Padding.Top + Padding.Bottom);
+		}
 
-        protected virtual void OnValueChanged(ControlBase control, EventArgs args)
-        {
-            if (ValueChanged != null)
-                ValueChanged.Invoke(this, EventArgs.Empty);
-        }
+		return Size.Zero;
+	}
 
-        private void OnEditingChanged()
-        {
-            m_Label.Redraw();
-        }
+	protected virtual void OnValueChanged(ControlBase control, EventArgs args) {
+		if(ValueChanged != null)
+			ValueChanged.Invoke(this, EventArgs.Empty);
+	}
 
-        private void OnHoverChanged()
-        {
-            m_Label.Redraw();
-        }
-    }
+	private void OnEditingChanged() {
+		label.Redraw();
+	}
+
+	private void OnHoverChanged() {
+		label.Redraw();
+	}
 }

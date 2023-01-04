@@ -4,29 +4,16 @@ using System.IO;
 namespace Gwen.Net.OpenTk;
 
 public class GwenGuiSettings {
-	public static GwenGuiSettings Default => new GwenGuiSettings {
-		DefaultFont = "Calibri",
-		Renderer = GwenGuiRenderer.GL40,
-		DrawBackground = true
-	};
-
 	//Make this a source or stream?
 	public FileInfo SkinFile { get; set; }
+	public string DefaultFont { get; set; } = "Calibri";
+	public GwenGuiRenderer Renderer { get; set; } = GwenGuiRenderer.GL40;
+	public bool DrawBackground { get; set; } = true;
 
-	public string DefaultFont { get; set; }
-
-	public GwenGuiRenderer Renderer { get; set; }
-
-	public bool DrawBackground { get; set; }
-
-	/// <summary>
-	/// Modifies this instance using the specified delegate.
-	/// </summary>
-	/// <returns>The same instance that this method was called on.</returns>
-	public GwenGuiSettings Modify(Action<GwenGuiSettings> settingsModifier) {
-		settingsModifier?.Invoke(this);
-		return this;
+	public GwenGuiSettings(FileInfo skinFile) {
+		SkinFile = skinFile;
 	}
-
-	private GwenGuiSettings() { }
+	public GwenGuiSettings(string skinFilePath) {
+		SkinFile = new FileInfo(skinFilePath);
+	}
 }

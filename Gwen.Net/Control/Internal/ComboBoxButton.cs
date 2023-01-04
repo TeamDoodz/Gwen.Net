@@ -9,11 +9,12 @@ namespace Gwen.Net.Control.Internal
     {
         private EditableComboBox m_ComboBox;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ComboBoxButton"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public ComboBoxButton(ControlBase parent, EditableComboBox comboBox)
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ComboBoxButton"/> class.
+		/// </summary>
+		/// <param name="parent">Parent control.</param>
+		/// <param name="comboBox">Combo box.</param>
+		public ComboBoxButton(ControlBase parent, EditableComboBox comboBox)
             : base(parent)
         {
             Width = BaseUnit;

@@ -6,12 +6,12 @@ namespace Gwen.Net.RichText.KnuthPlass
     internal abstract class Formatter
     {
         protected Renderer.RendererBase m_Renderer;
-        protected Font m_DefaultFont;
+        protected Font defaultFont;
 
         public Formatter(Renderer.RendererBase renderer, Font defaultFont)
         {
             m_Renderer = renderer;
-            m_DefaultFont = defaultFont;
+            this.defaultFont = defaultFont;
         }
 
         public void MeasureText(Font font, string text, out int width, out int height)

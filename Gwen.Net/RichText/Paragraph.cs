@@ -1,62 +1,52 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Gwen.Net.RichText
-{
-    public class Paragraph
-    {
-        private List<Part> m_Parts = new List<Part>();
+namespace Gwen.Net.RichText;
+public class Paragraph {
+	private List<Part> parts = new List<Part>();
 
-        private Margin m_Margin;
-        private int m_FirstIndent;
-        private int m_RemainigIndent;
+	private Margin margin;
+	private int firstIndent;
+	private int remainingIndent;
 
-        public List<Part> Parts { get { return m_Parts; } }
+	public List<Part> Parts => parts;
 
-        public Margin Margin { get { return m_Margin; } }
-        public int FirstIndent { get { return m_FirstIndent; } }
-        public int RemainigIndent { get { return m_RemainigIndent; } }
+	public Margin Margin => margin;
+	public int FirstIndent => firstIndent;
+	public int RemainigIndent => remainingIndent;
 
-        public Paragraph(Margin margin = new Margin(), int firstIndent = 0, int remainingIndent = 0)
-        {
-            m_Margin = margin;
-            m_FirstIndent = firstIndent;
-            m_RemainigIndent = remainingIndent;
-        }
+	public Paragraph(Margin margin = new Margin(), int firstIndent = 0, int remainingIndent = 0) {
+		this.margin = margin;
+		this.firstIndent = firstIndent;
+		this.remainingIndent = remainingIndent;
+	}
 
-        public Paragraph Text(string text)
-        {
-            m_Parts.Add(new TextPart(text));
+	public Paragraph Text(string text) {
+		parts.Add(new TextPart(text));
 
-            return this;
-        }
+		return this;
+	}
 
-        public Paragraph Text(string text, Color color)
-        {
-            m_Parts.Add(new TextPart(text, color));
+	public Paragraph Text(string text, Color color) {
+		parts.Add(new TextPart(text, color));
 
-            return this;
-        }
+		return this;
+	}
 
-        public Paragraph Link(string text, string link, Color? color = null, Color? hoverColor = null, Font hoverFont = null)
-        {
-            m_Parts.Add(color == null ? new LinkPart(text, link) : new LinkPart(text, link, (Color)color, hoverColor, hoverFont));
+	public Paragraph Link(string text, string link, Color? color = null, Color? hoverColor = null, Font? hoverFont = null) {
+		parts.Add(color == null ? new LinkPart(text, link) : new LinkPart(text, link, (Color)color, hoverColor, hoverFont));
 
-            return this;
-        }
+		return this;
+	}
 
-        public Paragraph Font(Font font = null)
-        {
-            m_Parts.Add(new FontPart(font));
+	public Paragraph Font(Font? font = null) {
+		parts.Add(new FontPart(font));
 
-            return this;
-        }
+		return this;
+	}
 
-        public Paragraph LineBreak()
-        {
-            m_Parts.Add(new LineBreakPart());
+	public Paragraph LineBreak() {
+		parts.Add(new LineBreakPart());
 
-            return this;
-        }
-    }
+		return this;
+	}
 }

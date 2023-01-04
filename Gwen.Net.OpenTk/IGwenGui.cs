@@ -7,6 +7,8 @@ namespace Gwen.Net.OpenTk;
 public interface IGwenGui : IDisposable {
 	ControlBase Root { get; }
 
+	bool IsLoaded { get; }
+
 	void Load();
 
 	void Resize(Vector2i newSize);

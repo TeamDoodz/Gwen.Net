@@ -1,128 +1,110 @@
 ﻿using System;
 using Gwen.Net.Control.Internal;
 
-namespace Gwen.Net.Control
-{
-    /// <summary>
-    /// CheckBox control.
-    /// </summary>
-    [Xml.XmlControl]
-    public class CheckBox : ButtonBase
-    {
-        private bool m_Checked;
+namespace Gwen.Net.Control;
 
-        /// <summary>
-        /// Indicates whether the checkbox is checked.
-        /// </summary>
-        [Xml.XmlProperty]
-        public bool IsChecked
-        {
-            get { return m_Checked; }
-            set
-            {
-                if (m_Checked == value) return;
-                m_Checked = value;
-                OnCheckChanged();
-            }
-        }
+/// <summary>
+/// CheckBox control.
+/// </summary>
+[Xml.XmlControl]
+public class CheckBox : ButtonBase {
+	private bool isChecked;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CheckBox"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public CheckBox(ControlBase parent)
-            : base(parent)
-        {
-            Size = new Size(BaseUnit);
-            IsToggle = true;
-        }
+	/// <summary>
+	/// Indicates whether the checkbox is checked.
+	/// </summary>
+	[Xml.XmlProperty]
+	public bool IsChecked {
+		get => isChecked;
+		set {
+			if(isChecked == value) return;
+			isChecked = value;
+			OnCheckChanged();
+		}
+	}
 
-        /// <summary>
-        /// Toggles the checkbox.
-        /// </summary>
-        public override void Toggle()
-        {
-            base.Toggle();
-            IsChecked = !IsChecked;
-        }
+	/// <summary>
+	/// Initializes a new instance of the <see cref="CheckBox"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	public CheckBox(ControlBase? parent)
+		: base(parent) {
+		Size = new Size(BaseUnit);
+		IsToggle = true;
+	}
 
-        /// <summary>
-        /// Invoked when the checkbox has been checked.
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> Checked;
+	/// <summary>
+	/// Toggles the checkbox.
+	/// </summary>
+	public override void Toggle() {
+		base.Toggle();
+		IsChecked = !IsChecked;
+	}
 
-        /// <summary>
-        /// Invoked when the checkbox has been unchecked.
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> UnChecked;
+	/// <summary>
+	/// Invoked when the checkbox has been checked.
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<EventArgs>? Checked;
 
-        /// <summary>
-        /// Invoked when the checkbox state has been changed.
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> CheckChanged;
+	/// <summary>
+	/// Invoked when the checkbox has been unchecked.
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<EventArgs>? UnChecked;
 
-        /// <summary>
-        /// Determines whether unchecking is allowed.
-        /// </summary>
-        protected virtual bool AllowUncheck { get { return true; } }
+	/// <summary>
+	/// Invoked when the checkbox state has been changed.
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<EventArgs>? CheckChanged;
 
-        /// <summary>
-        /// Handler for CheckChanged event.
-        /// </summary>
-        protected virtual void OnCheckChanged()
-        {
-            if (IsChecked)
-            {
-                if (Checked != null)
-                    Checked.Invoke(this, EventArgs.Empty);
-            }
-            else
-            {
-                if (UnChecked != null)
-                    UnChecked.Invoke(this, EventArgs.Empty);
-            }
+	/// <summary>
+	/// Determines whether unchecking is allowed.
+	/// </summary>
+	protected virtual bool AllowUncheck => true;
 
-            if (CheckChanged != null)
-                CheckChanged.Invoke(this, EventArgs.Empty);
-        }
+	/// <summary>
+	/// Handler for CheckChanged event.
+	/// </summary>
+	protected virtual void OnCheckChanged() {
+		if(IsChecked) {
+			Checked?.Invoke(this, EventArgs.Empty);
+		} else {
+			UnChecked?.Invoke(this, EventArgs.Empty);
+		}
 
-        protected override Size Measure(Size availableSize)
-        {
-            return new Size(15, 15);
-        }
+		CheckChanged?.Invoke(this, EventArgs.Empty);
+	}
 
-        protected override Size Arrange(Size finalSize)
-        {
-            return MeasuredSize;
-        }
+	protected override Size Measure(Size availableSize) {
+		return new Size(15, 15);
+	}
 
-        /// <summary>
-        /// Renders the control using specified skin.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void Render(Skin.SkinBase skin)
-        {
-            base.Render(skin);
-            skin.DrawCheckBox(this, m_Checked, IsDepressed);
-        }
+	protected override Size Arrange(Size finalSize) {
+		return MeasuredSize;
+	}
 
-        /// <summary>
-        /// Internal OnPressed implementation.
-        /// </summary>
-        protected override void OnClicked(int x, int y)
-        {
-            if (IsDisabled)
-                return;
+	/// <summary>
+	/// Renders the control using specified skin.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void Render(Skin.SkinBase skin) {
+		base.Render(skin);
+		skin.DrawCheckBox(this, isChecked, IsDepressed);
+	}
 
-            if (IsChecked && !AllowUncheck)
-            {
-                return;
-            }
+	/// <summary>
+	/// Internal OnPressed implementation.
+	/// </summary>
+	protected override void OnClicked(int x, int y) {
+		if(IsDisabled)
+			return;
 
-            base.OnClicked(x, y);
-        }
-    }
+		if(IsChecked && !AllowUncheck) {
+			return;
+		}
+
+		base.OnClicked(x, y);
+	}
 }

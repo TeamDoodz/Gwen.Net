@@ -1,14 +1,11 @@
-﻿using System;
-using Gwen.Net.Control;
+﻿using Gwen.Net.Control;
 
-namespace Gwen.Net.DragDrop
-{
-    public class Package
-    {
-        public string Name;
-        public object UserData;
-        public bool IsDraggable;
-        public ControlBase DrawControl;
-        public Point HoldOffset;
-    }
+namespace Gwen.Net.DragDrop;
+
+public class Package {
+	public string Name { get; set; } = "Unnamed Package";
+	public object? UserData { get; set; }
+	public bool IsDraggable { get; set; }
+	public ControlBase? DrawControl { get; set; }
+	public Point HoldOffset { get; set; }
 }

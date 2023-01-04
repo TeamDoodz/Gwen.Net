@@ -7,7 +7,7 @@ namespace Gwen.Net;
 // TODO: This class should be made internal as it is bad practice to expose utility methods like this. The reason why this has not been done yet is because it would break everything.
 
 /// <summary>
-/// Misc utility functions.
+/// Misc utility functions. Don't use this class outside of Gwen.Net namespaces.
 /// </summary>
 public static class Util {
 	public static int Ceil(float x) {

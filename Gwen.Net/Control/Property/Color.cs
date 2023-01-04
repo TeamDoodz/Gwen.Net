@@ -2,129 +2,110 @@
 using Gwen.Net.Control.Internal;
 using Gwen.Net.Input;
 
-namespace Gwen.Net.Control.Property
-{
-    /// <summary>
-    /// Color property.
-    /// </summary>
-    public class ColorProperty : Text
-    {
-        protected readonly ColorButton m_Button;
+namespace Gwen.Net.Control.Property;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ColorProperty"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        public ColorProperty(Control.ControlBase parent) : base(parent)
-        {
-            m_Button = new ColorButton(m_TextBox);
-            m_Button.Dock = Dock.Right;
-            m_Button.Width = 20;
-            m_Button.Margin = new Margin(1, 1, 1, 2);
-            m_Button.Clicked += OnButtonPressed;
-        }
+/// <summary>
+/// Color property.
+/// </summary>
+public class ColorProperty : Text {
+	protected readonly ColorButton button;
 
-        /// <summary>
-        /// Color-select button press handler.
-        /// </summary>
-        /// <param name="control">Event source.</param>
-		protected virtual void OnButtonPressed(Control.ControlBase control, EventArgs args)
-        {
-            Canvas canvas = GetCanvas();
+	/// <summary>
+	/// Initializes a new instance of the <see cref="ColorProperty"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	public ColorProperty(Control.ControlBase parent) : base(parent) {
+		button = new ColorButton(textBox);
+		button.Dock = Dock.Right;
+		button.Width = 20;
+		button.Margin = new Margin(1, 1, 1, 2);
+		button.Clicked += OnButtonPressed;
+	}
 
-            canvas.CloseMenus();
+	/// <inheritdoc/>
+	protected virtual void OnButtonPressed(Control.ControlBase control, EventArgs args) {
+		Canvas canvas = GetCanvas();
 
-            Popup popup = new Popup(canvas);
-            popup.DeleteOnClose = true;
-            popup.IsHidden = false;
-            popup.BringToFront();
+		canvas.CloseMenus();
 
-            HSVColorPicker picker = new HSVColorPicker(popup);
-            picker.SetColor(GetColorFromText(), false, true);
-            picker.ColorChanged += OnColorChanged;
+		Popup popup = new(canvas);
+		popup.DeleteOnClose = true;
+		popup.IsHidden = false;
+		popup.BringToFront();
 
-            Point p = m_Button.LocalPosToCanvas(Point.Zero);
+		HSVColorPicker picker = new HSVColorPicker(popup);
+		picker.SetColor(GetColorFromText(), false, true);
+		picker.ColorChanged += OnColorChanged;
 
-            popup.DoMeasure(canvas.ActualSize);
-            popup.DoArrange(new Rectangle(p.X + m_Button.ActualWidth - popup.MeasuredSize.Width, p.Y + ActualHeight, popup.MeasuredSize.Width, popup.MeasuredSize.Height));
+		Point p = button.LocalPosToCanvas(Point.Zero);
 
-            popup.Open(new Point(p.X + m_Button.ActualWidth - popup.MeasuredSize.Width, p.Y + ActualHeight));
-        }
+		popup.DoMeasure(canvas.ActualSize);
+		popup.DoArrange(new Rectangle(p.X + button.ActualWidth - popup.MeasuredSize.Width, p.Y + ActualHeight, popup.MeasuredSize.Width, popup.MeasuredSize.Height));
 
-        /// <summary>
-        /// Color changed handler.
-        /// </summary>
-        /// <param name="control">Event source.</param>
-		protected virtual void OnColorChanged(Control.ControlBase control, EventArgs args)
-        {
-            HSVColorPicker picker = control as HSVColorPicker;
-            SetTextFromColor(picker.SelectedColorRGB);
-            DoChanged();
-        }
+		popup.Open(new Point(p.X + button.ActualWidth - popup.MeasuredSize.Width, p.Y + ActualHeight));
+	}
 
-        /// <summary>
-        /// Property value.
-        /// </summary>
-        public override string Value
-        {
-            get { return m_TextBox.Text; }
-            set { base.Value = value; }
-        }
+	/// <summary>
+	/// Color changed handler.
+	/// </summary>
+	/// <param name="control">Event source.</param>
+	/// <param name="args">Event args.</param>
+	protected virtual void OnColorChanged(Control.ControlBase control, EventArgs args) {
+		if (control is HSVColorPicker picker) {
+			SetTextFromColor(picker.SelectedColorRGB);
+		}
+		DoChanged();
+	}
 
-        /// <summary>
-        /// Sets the property value.
-        /// </summary>
-        /// <param name="value">Value to set.</param>
-        /// <param name="fireEvents">Determines whether to fire "value changed" event.</param>
-        public override void SetValue(string value, bool fireEvents = false)
-        {
-            m_TextBox.SetText(value, fireEvents);
-        }
+	/// <inheritdoc/>
+	public override string Value {
+		get => textBox.Text;
+		set { base.Value = value; }
+	}
 
-        /// <summary>
-        /// Indicates whether the property value is being edited.
-        /// </summary>
-        public override bool IsEditing
-        {
-            get { return m_TextBox == InputHandler.KeyboardFocus; }
-        }
+	/// <summary>
+	/// Sets the property value.
+	/// </summary>
+	/// <param name="value">Value to set.</param>
+	/// <param name="fireEvents">Determines whether to fire "value changed" event.</param>
+	public override void SetValue(string value, bool fireEvents = false) {
+		textBox.SetText(value, fireEvents);
+	}
 
-        private void SetTextFromColor(Net.Color color)
-        {
-            m_TextBox.Text = String.Format("{0} {1} {2}", color.R, color.G, color.B);
-        }
+	/// <summary>
+	/// Indicates whether the property value is being edited.
+	/// </summary>
+	public override bool IsEditing => InputHandler.KeyboardFocus == textBox;
 
-        private Net.Color GetColorFromText()
-        {
-            string[] split = m_TextBox.Text.Split(' ');
+	private void SetTextFromColor(Net.Color color) {
+		textBox.Text = String.Format("{0} {1} {2}", color.R, color.G, color.B);
+	}
 
-            byte red = 0;
-            byte green = 0;
-            byte blue = 0;
-            byte alpha = 255;
+	private Net.Color GetColorFromText() {
+		string[] split = textBox.Text.Split(' ');
 
-            if (split.Length > 0 && split[0].Length > 0)
-            {
-                Byte.TryParse(split[0], out red);
-            }
+		byte red = 0;
+		byte green = 0;
+		byte blue = 0;
+		byte alpha = 255;
 
-            if (split.Length > 1 && split[1].Length > 0)
-            {
-                Byte.TryParse(split[1], out green);
-            }
+		if (split.Length > 0 && split[0].Length > 0) {
+			Byte.TryParse(split[0], out red);
+		}
 
-            if (split.Length > 2 && split[2].Length > 0)
-            {
-                Byte.TryParse(split[2], out blue);
-            }
+		if (split.Length > 1 && split[1].Length > 0) {
+			Byte.TryParse(split[1], out green);
+		}
 
-            return new Gwen.Net.Color(alpha, red, green, blue);
-        }
+		if (split.Length > 2 && split[2].Length > 0) {
+			Byte.TryParse(split[2], out blue);
+		}
 
-        protected override void DoChanged()
-        {
-            base.DoChanged();
-            m_Button.Color = GetColorFromText();
-        }
-    }
+		return new Gwen.Net.Color(alpha, red, green, blue);
+	}
+
+	protected override void DoChanged() {
+		base.DoChanged();
+		button.Color = GetColorFromText();
+	}
 }

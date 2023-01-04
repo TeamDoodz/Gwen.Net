@@ -32,7 +32,7 @@ public readonly struct Anchor : IEquatable<Anchor> {
 		return !lhs.Equals(rhs);
 	}
 
-	public override bool Equals(object obj) {
+	public override bool Equals(object? obj) {
 		if (ReferenceEquals(null, obj)) return false;
 		if (obj.GetType() != typeof(Anchor)) return false;
 		return Equals((Anchor)obj);

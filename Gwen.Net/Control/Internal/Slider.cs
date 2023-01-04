@@ -1,264 +1,240 @@
 ﻿using System;
-using Gwen.Net.Control.Internal;
 using Gwen.Net.Input;
 
-namespace Gwen.Net.Control.Internal
-{
-    /// <summary>
-    /// Base slider.
-    /// </summary>
-    public class Slider : ControlBase
-    {
-        protected readonly SliderBar m_SliderBar;
-        protected bool m_SnapToNotches;
-        protected int m_NotchCount;
-        protected float m_Value;
-        protected float m_Min;
-        protected float m_Max;
+namespace Gwen.Net.Control.Internal;
 
-        /// <summary>
-        /// Number of notches on the slider axis.
-        /// </summary>
-        [Xml.XmlProperty]
-        public int NotchCount { get { return m_NotchCount; } set { m_NotchCount = value; } }
+/// <summary>
+/// Base slider.
+/// </summary>
+public class Slider : ControlBase {
+	protected readonly SliderBar sliderBar;
+	protected bool snapToNotches;
+	protected int notchCount;
+	protected float value;
+	protected float min;
+	protected float max;
 
-        /// <summary>
-        /// Determines whether the slider should snap to notches.
-        /// </summary>
-        [Xml.XmlProperty]
-        public bool SnapToNotches { get { return m_SnapToNotches; } set { m_SnapToNotches = value; } }
+	/// <summary>
+	/// Number of notches on the slider axis.
+	/// </summary>
+	[Xml.XmlProperty]
+	public int NotchCount { get { return notchCount; } set { notchCount = value; } }
 
-        /// <summary>
-        /// Minimum value.
-        /// </summary>
-        [Xml.XmlProperty]
-        public float Min { get { return m_Min; } set { SetRange(value, m_Max); } }
+	/// <summary>
+	/// Determines whether the slider should snap to notches.
+	/// </summary>
+	[Xml.XmlProperty]
+	public bool SnapToNotches { get { return snapToNotches; } set { snapToNotches = value; } }
 
-        /// <summary>
-        /// Maximum value.
-        /// </summary>
-        [Xml.XmlProperty]
-        public float Max { get { return m_Max; } set { SetRange(m_Min, value); } }
+	/// <summary>
+	/// Minimum value.
+	/// </summary>
+	[Xml.XmlProperty]
+	public float Min { get { return min; } set { SetRange(value, max); } }
 
-        /// <summary>
-        /// Current value.
-        /// </summary>
-        [Xml.XmlProperty]
-        public float Value
-        {
-            get { return m_Min + (m_Value * (m_Max - m_Min)); }
-            set
-            {
-                if (value < m_Min) value = m_Min;
-                if (value > m_Max) value = m_Max;
-                // Normalize Value
-                value = (value - m_Min) / (m_Max - m_Min);
-                SetValueInternal(value);
-                Redraw();
-            }
-        }
+	/// <summary>
+	/// Maximum value.
+	/// </summary>
+	[Xml.XmlProperty]
+	public float Max { get { return max; } set { SetRange(min, value); } }
 
-        /// <summary>
-        /// Invoked when the value has been changed.
-        /// </summary>
-        [Xml.XmlEvent]
-        public event GwenEventHandler<EventArgs> ValueChanged;
+	/// <summary>
+	/// Current value.
+	/// </summary>
+	[Xml.XmlProperty]
+	public float Value {
+		get { return min + (value * (max - min)); }
+		set {
+			if(value < min) value = min;
+			if(value > max) value = max;
+			// Normalize Value
+			value = (value - min) / (max - min);
+			SetValueInternal(value);
+			Redraw();
+		}
+	}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Slider"/> class.
-        /// </summary>
-        /// <param name="parent">Parent control.</param>
-        protected Slider(ControlBase parent)
-            : base(parent)
-        {
-            m_SliderBar = new SliderBar(this);
-            m_SliderBar.Dragged += OnMoved;
+	/// <summary>
+	/// Invoked when the value has been changed.
+	/// </summary>
+	[Xml.XmlEvent]
+	public event GwenEventHandler<EventArgs>? ValueChanged;
 
-            m_Min = 0.0f;
-            m_Max = 1.0f;
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Slider"/> class.
+	/// </summary>
+	/// <param name="parent">Parent control.</param>
+	protected Slider(ControlBase? parent)
+		: base(parent) {
+		sliderBar = new SliderBar(this);
+		sliderBar.Dragged += OnMoved;
 
-            m_SnapToNotches = false;
-            m_NotchCount = 5;
-            m_Value = 0.0f;
+		min = 0.0f;
+		max = 1.0f;
 
-            KeyboardInputEnabled = true;
-            IsTabable = true;
-        }
+		snapToNotches = false;
+		notchCount = 5;
+		value = 0.0f;
 
-        /// <summary>
-        /// Handler for Right Arrow keyboard event.
-        /// </summary>
-        /// <param name="down">Indicates whether the key was pressed or released.</param>
-        /// <returns>
-        /// True if handled.
-        /// </returns>
-        protected override bool OnKeyRight(bool down)
-        {
-            if (down)
-                Value = Value + 1;
-            return true;
-        }
+		KeyboardInputEnabled = true;
+		IsTabable = true;
+	}
 
-        /// <summary>
-        /// Handler for Up Arrow keyboard event.
-        /// </summary>
-        /// <param name="down">Indicates whether the key was pressed or released.</param>
-        /// <returns>
-        /// True if handled.
-        /// </returns>
-        protected override bool OnKeyUp(bool down)
-        {
-            if (down)
-                Value = Value + 1;
-            return true;
-        }
+	/// <summary>
+	/// Handler for Right Arrow keyboard event.
+	/// </summary>
+	/// <param name="down">Indicates whether the key was pressed or released.</param>
+	/// <returns>
+	/// True if handled.
+	/// </returns>
+	protected override bool OnKeyRight(bool down) {
+		if(down)
+			Value = Value + 1;
+		return true;
+	}
 
-        /// <summary>
-        /// Handler for Left Arrow keyboard event.
-        /// </summary>
-        /// <param name="down">Indicates whether the key was pressed or released.</param>
-        /// <returns>
-        /// True if handled.
-        /// </returns>
-        protected override bool OnKeyLeft(bool down)
-        {
-            if (down)
-                Value = Value - 1;
-            return true;
-        }
+	/// <summary>
+	/// Handler for Up Arrow keyboard event.
+	/// </summary>
+	/// <param name="down">Indicates whether the key was pressed or released.</param>
+	/// <returns>
+	/// True if handled.
+	/// </returns>
+	protected override bool OnKeyUp(bool down) {
+		if(down)
+			Value = Value + 1;
+		return true;
+	}
 
-        /// <summary>
-        /// Handler for Down Arrow keyboard event.
-        /// </summary>
-        /// <param name="down">Indicates whether the key was pressed or released.</param>
-        /// <returns>
-        /// True if handled.
-        /// </returns>
-        protected override bool OnKeyDown(bool down)
-        {
-            if (down)
-                Value = Value - 1;
-            return true;
-        }
+	/// <summary>
+	/// Handler for Left Arrow keyboard event.
+	/// </summary>
+	/// <param name="down">Indicates whether the key was pressed or released.</param>
+	/// <returns>
+	/// True if handled.
+	/// </returns>
+	protected override bool OnKeyLeft(bool down) {
+		if(down)
+			Value = Value - 1;
+		return true;
+	}
 
-        /// <summary>
-        /// Handler for Home keyboard event.
-        /// </summary>
-        /// <param name="down">Indicates whether the key was pressed or released.</param>
-        /// <returns>
-        /// True if handled.
-        /// </returns>
-        protected override bool OnKeyHome(bool down)
-        {
-            if (down)
-                Value = m_Min;
-            return true;
-        }
+	/// <summary>
+	/// Handler for Down Arrow keyboard event.
+	/// </summary>
+	/// <param name="down">Indicates whether the key was pressed or released.</param>
+	/// <returns>
+	/// True if handled.
+	/// </returns>
+	protected override bool OnKeyDown(bool down) {
+		if(down)
+			Value = Value - 1;
+		return true;
+	}
 
-        /// <summary>
-        /// Handler for End keyboard event.
-        /// </summary>
-        /// <param name="down">Indicates whether the key was pressed or released.</param>
-        /// <returns>
-        /// True if handled.
-        /// </returns>
-        protected override bool OnKeyEnd(bool down)
-        {
-            if (down)
-                Value = m_Max;
-            return true;
-        }
+	/// <summary>
+	/// Handler for Home keyboard event.
+	/// </summary>
+	/// <param name="down">Indicates whether the key was pressed or released.</param>
+	/// <returns>
+	/// True if handled.
+	/// </returns>
+	protected override bool OnKeyHome(bool down) {
+		if(down)
+			Value = min;
+		return true;
+	}
 
-        /// <summary>
-        /// Handler invoked on mouse click (left) event.
-        /// </summary>
-        /// <param name="x">X coordinate.</param>
-        /// <param name="y">Y coordinate.</param>
-        /// <param name="down">If set to <c>true</c> mouse button is down.</param>
-        protected override void OnMouseClickedLeft(int x, int y, bool down)
-        {
+	/// <summary>
+	/// Handler for End keyboard event.
+	/// </summary>
+	/// <param name="down">Indicates whether the key was pressed or released.</param>
+	/// <returns>
+	/// True if handled.
+	/// </returns>
+	protected override bool OnKeyEnd(bool down) {
+		if(down)
+			Value = max;
+		return true;
+	}
 
-        }
+	/// <summary>
+	/// Handler invoked on mouse click (left) event.
+	/// </summary>
+	/// <param name="x">X coordinate.</param>
+	/// <param name="y">Y coordinate.</param>
+	/// <param name="down">If set to <c>true</c> mouse button is down.</param>
+	protected override void OnMouseClickedLeft(int x, int y, bool down) {
 
-        protected virtual void OnMoved(ControlBase control, EventArgs args)
-        {
-            SetValueInternal(CalculateValue());
-        }
+	}
 
-        protected virtual float CalculateValue()
-        {
-            return 0;
-        }
+	protected virtual void OnMoved(ControlBase control, EventArgs args) {
+		SetValueInternal(CalculateValue());
+	}
 
-        protected virtual void UpdateBarFromValue()
-        {
+	protected virtual float CalculateValue() {
+		return 0;
+	}
 
-        }
+	protected virtual void UpdateBarFromValue() {
 
-        protected virtual void SetValueInternal(float val)
-        {
-            if (m_SnapToNotches)
-            {
-                val = (float)Math.Floor((val * m_NotchCount) + 0.5f);
-                val /= m_NotchCount;
-            }
+	}
 
-            if (m_Value != val)
-            {
-                m_Value = val;
-                if (ValueChanged != null)
-                    ValueChanged.Invoke(this, EventArgs.Empty);
-            }
+	protected virtual void SetValueInternal(float val) {
+		if(snapToNotches) {
+			val = (float)Math.Floor((val * notchCount) + 0.5f);
+			val /= notchCount;
+		}
 
-            UpdateBarFromValue();
-        }
+		if(value != val) {
+			value = val;
+			if(ValueChanged != null)
+				ValueChanged.Invoke(this, EventArgs.Empty);
+		}
 
-        /// <summary>
-        /// Sets the value range.
-        /// </summary>
-        /// <param name="min">Minimum value.</param>
-        /// <param name="max">Maximum value.</param>
-        public void SetRange(float min, float max)
-        {
-            m_Min = min;
-            m_Max = max;
-        }
+		UpdateBarFromValue();
+	}
 
-        /// <summary>
-        /// Renders the focus overlay.
-        /// </summary>
-        /// <param name="skin">Skin to use.</param>
-        protected override void RenderFocus(Skin.SkinBase skin)
-        {
-            if (InputHandler.KeyboardFocus != this) return;
-            if (!IsTabable) return;
+	/// <summary>
+	/// Sets the value range.
+	/// </summary>
+	/// <param name="min">Minimum value.</param>
+	/// <param name="max">Maximum value.</param>
+	public void SetRange(float min, float max) {
+		this.min = min;
+		this.max = max;
+	}
 
-            skin.DrawKeyboardHighlight(this, RenderBounds, 0);
-        }
+	/// <summary>
+	/// Renders the focus overlay.
+	/// </summary>
+	/// <param name="skin">Skin to use.</param>
+	protected override void RenderFocus(Skin.SkinBase skin) {
+		if(InputHandler.KeyboardFocus != this) return;
+		if(!IsTabable) return;
 
-        protected override Size Measure(Size availableSize)
-        {
-            m_SliderBar.DoMeasure(availableSize);
+		skin.DrawKeyboardHighlight(this, RenderBounds, 0);
+	}
 
-            return m_SliderBar.MeasuredSize;
-        }
+	protected override Size Measure(Size availableSize) {
+		sliderBar.DoMeasure(availableSize);
 
-        protected override Size Arrange(Size finalSize)
-        {
-            m_SliderBar.DoArrange(new Rectangle(Point.Zero, m_SliderBar.MeasuredSize));
+		return sliderBar.MeasuredSize;
+	}
 
-            UpdateBarFromValue();
+	protected override Size Arrange(Size finalSize) {
+		sliderBar.DoArrange(new Rectangle(Point.Zero, sliderBar.MeasuredSize));
 
-            return finalSize;
-        }
+		UpdateBarFromValue();
 
-        protected override void OnBoundsChanged(Rectangle oldBounds)
-        {
-            base.OnBoundsChanged(oldBounds);
+		return finalSize;
+	}
 
-            // We need to know if bounds are changed to update the bar.
-            // In Arrange() we don't know yet new bounds.
-            UpdateBarFromValue();
-        }
-    }
+	protected override void OnBoundsChanged(Rectangle oldBounds) {
+		base.OnBoundsChanged(oldBounds);
+
+		// We need to know if bounds are changed to update the bar.
+		// In Arrange() we don't know yet new bounds.
+		UpdateBarFromValue();
+	}
 }

@@ -31,7 +31,7 @@ public struct Point {
 		return pt1.X != pt2.X || pt1.Y != pt2.Y;
 	}
 
-	public override bool Equals(object obj) {
+	public override bool Equals(object? obj) {
 		if (obj is Point point) {
 			return point == this;
 		}

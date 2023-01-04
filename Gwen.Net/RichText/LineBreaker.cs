@@ -1,22 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Gwen.Net.Renderer;
 
-namespace Gwen.Net.RichText
-{
-    internal abstract class LineBreaker
-    {
-        private Renderer.RendererBase m_Renderer;
-        private Font m_DefaultFont;
+namespace Gwen.Net.RichText;
 
-        public Renderer.RendererBase Renderer { get { return m_Renderer; } }
-        public Font DefaultFont { get { return m_DefaultFont; } }
+internal abstract class LineBreaker {
+	private readonly RendererBase renderer;
+	private readonly Font defaultFont;
 
-        public LineBreaker(Renderer.RendererBase renderer, Font defaultFont)
-        {
-            m_Renderer = renderer;
-            m_DefaultFont = defaultFont;
-        }
+	public RendererBase Renderer => renderer;
+	public Font DefaultFont => defaultFont;
 
-        public abstract List<TextBlock> LineBreak(Paragraph paragraph, int width);
-    }
+	public LineBreaker(RendererBase renderer, Font defaultFont) {
+		this.renderer = renderer;
+		this.defaultFont = defaultFont;
+	}
+
+	public abstract List<TextBlock> LineBreak(Paragraph paragraph, int width);
 }
